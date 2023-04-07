@@ -1,40 +1,41 @@
 ﻿using Api.Modules.Identity.Classes;
-using Api.Modules.Identity.Data;
-using Api.Modules.Identity.Data.Tables;
+using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Modules.Identity.Endpoints
 {
     public static class PostLogin
     {
-        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IdentityContext identity, HttpContext http, IConfiguration config)
+        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityRepository identity, IConfiguration config, HttpContext http)
         {
-            if (!await identity.Account.AnyAsync(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == credentials.Email))
-                return await AddLoginAsync(identity, http, config, null, credentials.Email, false);
+            if (!await identity.AnyLocalAccountByEmailAsync(credentials.Email))
+            {
+                await identity.InsertLoginAsync(null, credentials.Email, false, http);
+                return Results.Unauthorized();
+            }
 
-            var account = await identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == credentials.Email).Include(x => x.Password).FirstOrDefaultAsync();
+            var account = await identity.GetLocalAccountAndPasswordByEmailAsync(credentials.Email);
             if (account == null || account.Password == null)
-                return await AddLoginAsync(identity, http, config, null, credentials.Email, false);
+            {
+                await identity.InsertLoginAsync(null, credentials.Email, false, http);
+                return Results.Unauthorized();
+            }
 
             var correctPassword = Encryption.VerifyHash(credentials.Password, account.Password.Hash);
             if (!correctPassword)
-                return await AddLoginAsync(identity, http, config, account.Id, credentials.Email, false);
+            {
+                await identity.InsertLoginAsync(account.Id, account.Email, false, http);
+                return Results.Unauthorized();
+            }
 
             if (config.GetValue<bool>("Identity:VerificationRequired") && account.Verified == false)
             {
-                _ = await AddLoginAsync(identity, http, config, account.Id, credentials.Email, true);
+                await identity.InsertLoginAsync(account.Id, account.Email, true, http);
                 return Results.Forbid();
             }
 
-            return await AddLoginAsync(identity, http, config, account.Id, credentials.Email, true);
-        }
-
-        private static async Task<IResult> AddLoginAsync(IdentityContext identity, HttpContext http, IConfiguration config, Guid? accountId, string email, bool successful)
-        {
-            await identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, Successful = successful, IpAddress = http.Connection.RemoteIpAddress });
-            await identity.SaveChangesAsync();
-            return successful ? Results.Text(Authorization.GenerateToken(config, accountId, email), statusCode: 200) : Results.Unauthorized();
+            await identity.InsertLoginAsync(account.Id, account.Email, true, http);
+            return Results.Text(Authorization.GenerateToken(config, account.Id, account.Email));
         }
     }
 }

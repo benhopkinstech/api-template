@@ -1,4 +1,5 @@
 ﻿using Api.Modules.Identity.Data;
+using Api.Modules.Identity.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 
@@ -6,7 +7,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class GetVerification
     {
-        public static async Task<IResult> VerifyAsync(string code, IdentityContext identity, IConfiguration config)
+        public static async Task<IResult> VerifyAsync(string code, IIdentityRepository identity, IConfiguration config)
         {
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.NotFound();
@@ -21,7 +22,7 @@ namespace Api.Modules.Identity.Endpoints
             if (DateTime.UtcNow > verificationCreated.AddDays(3))
                 return Results.BadRequest("Verification link expired");
 
-            var accountVerification = await identity.Verification.Where(x => x.Id == verificationId).FirstOrDefaultAsync();
+            var accountVerification = await identity.GetVerificationByIdAsync(verificationId);
             if (accountVerification == null)
                 return Results.NotFound();
 
@@ -29,21 +30,19 @@ namespace Api.Modules.Identity.Endpoints
             if (accountVerification.Id != verificationId || accountVerification.AccountId != accountId || difference > TimeSpan.FromSeconds(3))
                 return Results.NotFound();
 
-            var account = await identity.Account.Where(x => x.Id == accountId).Include(x => x.Verification).FirstOrDefaultAsync();
+            var account = await identity.GetLocalAccountAndVerificationByIdAsync(accountId);
             if (account == null)
                 return Results.NotFound();
 
             if (account.Verified)
             {
-                identity.Verification.RemoveRange(account.Verification);
+                identity.RemoveRangeVerification(account.Verification);
                 await identity.SaveChangesAsync();
                 return Results.Ok("Account already verified");
             }
 
-            account.Verified = true;
-            account.VerifiedOn = DateTime.UtcNow;
-            account.UpdatedOn = DateTime.UtcNow;
-            identity.Verification.RemoveRange(account.Verification);
+            identity.AmendAccountVerified(account);
+            identity.RemoveRangeVerification(account.Verification);
             await identity.SaveChangesAsync();
             return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrl") ?? "");
         }

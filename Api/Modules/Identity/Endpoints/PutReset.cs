@@ -1,15 +1,12 @@
-﻿using Api.Modules.Identity.Classes;
-using Api.Modules.Identity.Data;
-using Api.Modules.Identity.Data.Tables;
+﻿using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Text;
 
 namespace Api.Modules.Identity.Endpoints
 {
     public static class PutReset
     {
-        public static async Task<IResult> ResetAsync(PasswordModel newPassword, string code, IdentityContext identity)
+        public static async Task<IResult> ResetAsync(PasswordModel newPassword, string code, IIdentityRepository identity)
         {
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.NotFound();
@@ -24,7 +21,7 @@ namespace Api.Modules.Identity.Endpoints
             if (DateTime.UtcNow > resetCreated.AddDays(3))
                 return Results.BadRequest("Reset link expired");
 
-            var accountReset = await identity.Reset.Where(x => x.Id == resetId).FirstOrDefaultAsync();
+            var accountReset = await identity.GetResetByIdAsync(resetId);
             if (accountReset == null)
                 return Results.NotFound();
 
@@ -32,15 +29,12 @@ namespace Api.Modules.Identity.Endpoints
             if (accountReset.Id != resetId || accountReset.AccountId != accountId || difference > TimeSpan.FromSeconds(3))
                 return Results.NotFound();
 
-            var account = await identity.Account.Where(x => x.Id == accountId).Include(x => x.Password).Include(x => x.Reset).FirstOrDefaultAsync();
+            var account = await identity.GetLocalAccountPasswordAndResetByIdAsync(accountId);
             if (account == null || account.Password == null)
                 return Results.NotFound();
 
-            var currentPassword = account.Password.Hash;
-            account.Password.Hash = Encryption.GenerateHash(newPassword.Password);
-            account.Password.UpdatedOn = DateTime.UtcNow;
-            identity.Reset.RemoveRange(account.Reset);
-            await identity.PasswordAudit.AddAsync(new PasswordAudit { AccountId = account.Id, Hash = currentPassword });
+            await identity.AmendPasswordAsync(account.Password, newPassword.Password);
+            identity.RemoveRangeReset(account.Reset);
             await identity.SaveChangesAsync();
 
             return Results.Ok("Password reset");
