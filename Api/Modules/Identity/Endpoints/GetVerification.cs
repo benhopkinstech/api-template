@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Api.Modules.Identity.Endpoints
 {
-    public static class GetVerify
+    public static class GetVerification
     {
-        public static async Task<IResult> VerifyAsync(string code, IdentityContext identity)
+        public static async Task<IResult> VerifyAsync(string code, IdentityContext identity, IConfiguration config)
         {
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.NotFound();
@@ -45,7 +45,7 @@ namespace Api.Modules.Identity.Endpoints
             account.UpdatedOn = DateTime.UtcNow;
             identity.Verification.RemoveRange(account.Verification);
             await identity.SaveChangesAsync();
-            return Results.Redirect("http://www.google.com?success=1");
+            return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrl") ?? "");
         }
     }
 }

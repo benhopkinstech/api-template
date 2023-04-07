@@ -38,8 +38,8 @@ namespace Api.Modules.Identity
                 .AddEndpointFilter<EmailValidationFilter>()
                 .WithTags(_module).WithName(nameof(PostResetLink.SendResetLinkAsync)).WithOpenApi();
 
-            endpoints.MapGet($"{_module}/Verify", GetVerify.VerifyAsync)
-                .WithTags(_module).WithName(nameof(GetVerify.VerifyAsync)).WithOpenApi();
+            endpoints.MapGet($"{_module}/Verification", GetVerification.VerifyAsync)
+                .WithTags(_module).WithName(nameof(GetVerification.VerifyAsync)).WithOpenApi();
 
             endpoints.MapPut($"{_module}/Reset", PutReset.ResetAsync)
                 .AddEndpointFilter<PasswordValidationFilter>()

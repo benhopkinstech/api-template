@@ -9,7 +9,7 @@ namespace Api.Modules.Identity.Classes
     {
         public static async Task<bool> SendVerificationLinkAsync(IConfiguration config, HttpContext http, Verification verification, string recipient)
         {
-            var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}/Identity/Verify?code=";
+            var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}/identity/verification?code=";
             var dynamicTemplateData = new
             {
                 url = baseUrl + Convert.ToBase64String(Encoding.Unicode.GetBytes($"{verification.Id}&{verification.AccountId}&{verification.CreatedOn}")),
@@ -30,9 +30,10 @@ namespace Api.Modules.Identity.Classes
 
         public static async Task<bool> SendResetLinkAsync(IConfiguration config, Reset reset, string recipient)
         {
+            var resetUrl = config.GetValue<string>("Identity:ResetUrl");
             var dynamicTemplateData = new
             {
-                code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{reset.Id}&{reset.AccountId}&{reset.CreatedOn}")),
+                url = resetUrl + Convert.ToBase64String(Encoding.Unicode.GetBytes($"{reset.Id}&{reset.AccountId}&{reset.CreatedOn}")),
             };
 
             return await SendViaSendGridAsync(config, recipient, config.GetValue<string>("SendGrid:ResetLinkTemplateId") ?? "", dynamicTemplateData);
