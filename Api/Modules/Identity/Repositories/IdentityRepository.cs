@@ -3,7 +3,6 @@ using Api.Modules.Identity.Data;
 using Api.Modules.Identity.Data.Tables;
 using Api.Modules.Identity.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Principal;
 
 namespace Api.Modules.Identity.Repositories
 {
@@ -67,9 +66,9 @@ namespace Api.Modules.Identity.Repositories
             return await _identity.Reset.Where(x => x.Id == id).FirstOrDefaultAsync();
         }
 
-        public async Task<Account> AddAccountAsync(string email)
+        public async Task<Account> AddLocalAccountAsync(string email)
         {
-            var account = new Account { Id = Guid.NewGuid(), Email = email };
+            var account = new Account { Id = Guid.NewGuid(), ProviderId = (short)Enums.Provider.Local, Email = email };
             await _identity.Account.AddAsync(account);
             return account;
         }

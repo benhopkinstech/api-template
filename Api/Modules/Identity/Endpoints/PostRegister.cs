@@ -11,7 +11,7 @@ namespace Api.Modules.Identity.Endpoints
             if (await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return Results.Conflict("Email already in use");
 
-            var account = await identity.AddAccountAsync(credentials.Email);
+            var account = await identity.AddLocalAccountAsync(credentials.Email);
             await identity.AddPasswordAsync(account.Id, credentials.Password);
             var verification = await identity.AddVerificationAsync(account.Id);
             await identity.SaveChangesAsync();
