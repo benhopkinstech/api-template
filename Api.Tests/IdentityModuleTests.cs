@@ -1,14 +1,29 @@
-﻿using Xunit;
+﻿using Api.Modules.Identity.Models;
+using System.Net.Http.Json;
+using Xunit;
 
 namespace Api.Tests
 {
-    public class IdentityModuleTests : IClassFixture<ApiWebApplicationFactory>
+    public class IdentityModuleTests : IntegrationTest
     {
-        readonly HttpClient _client;
+        public IdentityModuleTests(ApiWebApplicationFactory fixture) 
+            : base(fixture) { }
 
-        public IdentityModuleTests(ApiWebApplicationFactory application)
+        [Fact]
+        public async Task TestPostRegister()
         {
-            _client = application.CreateClient();
+            await ResetDatabse();
+
+            var credentials = new CredentialsModel();
+            var response = await _client.PostAsJsonAsync<CredentialsModel>("identity/register", credentials);
+
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+
+            credentials.Email = "test@test.com";
+            credentials.Password = "password";
+            response = await _client.PostAsJsonAsync<CredentialsModel>("identity/register", credentials);
+
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.Created);
         }
     }
 }

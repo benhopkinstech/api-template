@@ -1,0 +1,11 @@
+{
+  "ConnectionStrings": {
+    "Database": "Host=localhost;Database=test;Username=postgres;Password=password"
+  },
+  "SendGrid": {
+    "ApiKey": "disabled"
+  },
+  "Identity": {
+    "VerificationRequired": false
+  }
+}
