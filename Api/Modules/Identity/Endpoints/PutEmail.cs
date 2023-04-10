@@ -18,6 +18,9 @@ namespace Api.Modules.Identity.Endpoints
             if (account == null || account.Password == null || account.Verification == null)
                 return Results.NotFound();
 
+            if (credentials.Email == account.Email)
+                return Results.BadRequest();
+
             if (await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return Results.Conflict("Email already in use");
 

@@ -70,6 +70,89 @@ namespace Api.Tests.Identity
         }
 
         [Fact]
+        public async Task PutEmail()
+        {
+            await ResetDatabse();
+            string email = "test@test.com";
+            string password = "password";
+
+            var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+            var emailUpdate = new CredentialsModel();
+            response = await _client.PutAsJsonAsync("identity/email", emailUpdate);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            response = await _client.PutAsJsonAsync("identity/email", emailUpdate);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            var account = await _identity.GetLocalAccountByEmailAsync(email);
+            Assert.NotNull(account);
+            await _identity.AmendAccountVerifiedAsync(account);
+            await _identity.SaveChangesAsync();
+            Assert.True(account.Verified);
+
+            emailUpdate.Email = email;
+            emailUpdate.Password = password;
+            response = await _client.PutAsJsonAsync("identity/email", emailUpdate);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            emailUpdate.Email = "newemail@test.com";
+            response = await _client.PutAsJsonAsync("identity/email", emailUpdate);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            foreach (var entity in _dbContext.ChangeTracker.Entries().ToList())
+                entity.Reload();
+            Assert.Equal(account.Email, emailUpdate.Email);
+            Assert.False(account.Verified);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, emailUpdate.Email, password);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task PutPassword()
+        {
+            await ResetDatabse();
+            string email = "test@test.com";
+            string password = "password";
+
+            var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+            var passwordUpdate = new PasswordUpdateModel();
+            response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            passwordUpdate.Password = password;
+            passwordUpdate.CurrentPassword = password;
+            response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            passwordUpdate.Password = "newepassword";
+            response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, passwordUpdate.Password);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task PostVerificationLinkAndGetVerify()
         {
             await ResetDatabse();
@@ -163,6 +246,26 @@ namespace Api.Tests.Identity
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, "new password");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Delete()
+        {
+            await ResetDatabse();
+            string email = "test@test.com";
+            string password = "password";
+
+            var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            response = await _client.DeleteAsync("identity/delete");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
     }
 }
