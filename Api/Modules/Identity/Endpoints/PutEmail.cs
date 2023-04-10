@@ -26,7 +26,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             if (account.Verification.Count > 0)
-                await identity.RemoveRangeVerification(account.Verification);
+                await identity.RemoveRangeVerificationAsync(account.Verification);
 
             var verification = await identity.AddVerificationAsync(account.Id);
             var currentEmail = account.Email;

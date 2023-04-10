@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Api.Modules.Identity.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Respawn;
 using Respawn.Graph;
@@ -21,10 +23,10 @@ namespace Api.Tests
 
         public async Task ResetDatabse()
         {
-            await using var npgsqlConnection = new NpgsqlConnection(_configuration.GetConnectionString("Database") ?? "");
-            await npgsqlConnection.OpenAsync();
+            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Database") ?? "");
+            await connection.OpenAsync();
 
-            var respawner = await Respawner.CreateAsync(npgsqlConnection, new RespawnerOptions
+            var respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
             {
                 SchemasToInclude = new[]
                 {
@@ -37,7 +39,18 @@ namespace Api.Tests
                 DbAdapter = DbAdapter.Postgres
             });
 
-            await respawner.ResetAsync(npgsqlConnection);
+            await respawner.ResetAsync(connection);
+        }
+
+        public IdentityContext CreateIdentityContext()
+        {
+            var options = new DbContextOptionsBuilder<IdentityContext>()
+                .UseNpgsql(_configuration.GetConnectionString("Database"))
+                .Options;
+
+            var context = new IdentityContext(options);
+
+            return context;
         }
     }
 }

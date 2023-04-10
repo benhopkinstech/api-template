@@ -2,9 +2,9 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
-namespace Api.Tests
+namespace Api.Tests.Identity
 {
-    public static class Extensions
+    public static class IdentityExtensions
     {
         public static async Task<HttpResponseMessage> RegisterWithCredentialsAsync(HttpClient client, string email, string password)
         {
@@ -14,9 +14,7 @@ namespace Api.Tests
                 Password = password
             };
 
-            var response = await client.PostAsJsonAsync<CredentialsModel>("identity/register", credentials);
-
-            return response;
+            return await client.PostAsJsonAsync("identity/register", credentials);
         }
 
         public static async Task<HttpResponseMessage> LoginWithCredentialsAsync(HttpClient client, string email, string password)
@@ -27,7 +25,7 @@ namespace Api.Tests
                 Password = password
             };
 
-            var response = await client.PostAsJsonAsync<CredentialsModel>("identity/login", credentials);
+            var response = await client.PostAsJsonAsync("identity/login", credentials);
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {

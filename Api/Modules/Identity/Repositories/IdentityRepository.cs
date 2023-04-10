@@ -107,7 +107,7 @@ namespace Api.Modules.Identity.Repositories
             return account;
         }
 
-        public Task AmendAccountVerified(Account account)
+        public Task AmendAccountVerifiedAsync(Account account)
         {
             account.Verified = true;
             account.VerifiedOn = DateTime.UtcNow;
@@ -122,13 +122,13 @@ namespace Api.Modules.Identity.Repositories
             passwordRecord.UpdatedOn = DateTime.UtcNow;
         }
 
-        public Task RemoveRangeVerification(ICollection<Verification> verification)
+        public Task RemoveRangeVerificationAsync(ICollection<Verification> verification)
         {
             _identity.Verification.RemoveRange(verification);
             return Task.CompletedTask;
         }
 
-        public Task RemoveRangeReset(ICollection<Reset> reset)
+        public Task RemoveRangeResetAsync(ICollection<Reset> reset)
         {
             _identity.Reset.RemoveRange(reset);
             return Task.CompletedTask;

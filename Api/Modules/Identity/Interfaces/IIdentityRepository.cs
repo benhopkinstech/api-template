@@ -20,10 +20,10 @@ namespace Api.Modules.Identity.Interfaces
         public Task<Verification> AddVerificationAsync(Guid accountId);
         public Task<Reset> AddResetAsync(Guid accountId);
         public Task<Account> AmendAccountEmailAsync(Account account, string email);
-        public Task AmendAccountVerified(Account account);
+        public Task AmendAccountVerifiedAsync(Account account);
         public Task AmendPasswordAsync(Password passwordRecord, string password);
-        public Task RemoveRangeVerification(ICollection<Verification> verification);
-        public Task RemoveRangeReset(ICollection<Reset> reset);
+        public Task RemoveRangeVerificationAsync(ICollection<Verification> verification);
+        public Task RemoveRangeResetAsync(ICollection<Reset> reset);
         public Task InsertLoginAsync(Guid? accountId, string email, bool successful, HttpContext http);
         public Task DeleteAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification,
             ICollection<Reset> reset, Password password, Account account);
