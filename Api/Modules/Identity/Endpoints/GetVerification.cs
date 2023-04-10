@@ -1,6 +1,4 @@
-﻿using Api.Modules.Identity.Data;
-using Api.Modules.Identity.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Api.Modules.Identity.Interfaces;
 using System.Text;
 
 namespace Api.Modules.Identity.Endpoints
@@ -31,7 +29,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             var account = await identity.GetLocalAccountIncludeVerificationByIdAsync(accountId);
-            if (account == null)
+            if (account == null || account.Verification == null)
                 return Results.NotFound();
 
             if (account.Verified)

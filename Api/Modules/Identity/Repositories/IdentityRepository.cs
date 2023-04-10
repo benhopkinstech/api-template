@@ -26,6 +26,16 @@ namespace Api.Modules.Identity.Repositories
                 .Include(x => x.Verification).Include(x => x.Reset).Include(x => x.Password).FirstOrDefaultAsync();
         }
 
+        public async Task<Account?> GetLocalAccountByIdAsync(Guid id)
+        {
+            return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Id == id).FirstOrDefaultAsync();
+        }
+
+        public async Task<Account?> GetLocalAccountByEmailAsync(string email)
+        {
+            return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == email).FirstOrDefaultAsync();
+        }
+
         public async Task<Account?> GetLocalAccountIncludePasswordByEmailAsync(string email)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == email).Include(x => x.Password).FirstOrDefaultAsync();
@@ -34,11 +44,6 @@ namespace Api.Modules.Identity.Repositories
         public async Task<Account?> GetLocalAccountIncludeVerificationByIdAsync(Guid id)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Id == id).Include(x => x.Verification).FirstOrDefaultAsync();
-        }
-
-        public async Task<Account?> GetLocalAccountIncludeResetByEmailAsync(string email)
-        {
-            return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == email).Include(x => x.Reset).FirstOrDefaultAsync();
         }
 
         public async Task<Account?> GetLocalAccountIncludePasswordVerificationByIdAsync(Guid id)

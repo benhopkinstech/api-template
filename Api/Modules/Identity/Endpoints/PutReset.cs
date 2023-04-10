@@ -18,7 +18,7 @@ namespace Api.Modules.Identity.Endpoints
             if (!Guid.TryParse(decodedItems[0], out var resetId) || !Guid.TryParse(decodedItems[1], out var accountId) || !DateTime.TryParse(decodedItems[2], out var resetCreated))
                 return Results.NotFound();
 
-            if (DateTime.UtcNow > resetCreated.AddDays(3))
+            if (DateTime.UtcNow > resetCreated.AddDays(1))
                 return Results.BadRequest("Reset link expired");
 
             var accountReset = await identity.GetResetByIdAsync(resetId);
@@ -30,7 +30,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             var account = await identity.GetLocalAccountIncludePasswordResetByIdAsync(accountId);
-            if (account == null || account.Password == null)
+            if (account == null || account.Password == null || account.Reset == null)
                 return Results.NotFound();
 
             await identity.AmendPasswordAsync(account.Password, newPassword.Password);
