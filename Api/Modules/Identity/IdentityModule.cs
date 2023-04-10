@@ -35,7 +35,6 @@ namespace Api.Modules.Identity
                 .WithTags(_module).WithName(nameof(PutPassword.UpdatePasswordAsync)).WithOpenApi();
 
             endpoints.MapPost($"{_module}/VerificationLink", PostVerificationLink.SendVerificationLinkAsync)
-                .AddEndpointFilter<EmailValidationFilter>()
                 .WithTags(_module).WithName(nameof(PostVerificationLink.SendVerificationLinkAsync)).WithOpenApi();
 
             endpoints.MapPost($"{_module}/ResetLink", PostResetLink.SendResetLinkAsync)
