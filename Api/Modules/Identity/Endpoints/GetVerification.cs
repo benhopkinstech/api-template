@@ -34,13 +34,13 @@ namespace Api.Modules.Identity.Endpoints
 
             if (account.Verified)
             {
-                identity.RemoveRangeVerification(account.Verification);
+                await identity.RemoveRangeVerification(account.Verification);
                 await identity.SaveChangesAsync();
                 return Results.Ok("Account already verified");
             }
 
-            identity.AmendAccountVerified(account);
-            identity.RemoveRangeVerification(account.Verification);
+            await identity.AmendAccountVerified(account);
+            await identity.RemoveRangeVerification(account.Verification);
             await identity.SaveChangesAsync();
             return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrl") ?? "");
         }

@@ -107,11 +107,12 @@ namespace Api.Modules.Identity.Repositories
             return account;
         }
 
-        public void AmendAccountVerified(Account account)
+        public Task AmendAccountVerified(Account account)
         {
             account.Verified = true;
             account.VerifiedOn = DateTime.UtcNow;
             account.UpdatedOn = DateTime.UtcNow;
+            return Task.CompletedTask;
         }
 
         public async Task AmendPasswordAsync(Password passwordRecord, string password)
@@ -121,14 +122,16 @@ namespace Api.Modules.Identity.Repositories
             passwordRecord.UpdatedOn = DateTime.UtcNow;
         }
 
-        public void RemoveRangeVerification(ICollection<Verification> verification)
+        public Task RemoveRangeVerification(ICollection<Verification> verification)
         {
             _identity.Verification.RemoveRange(verification);
+            return Task.CompletedTask;
         }
 
-        public void RemoveRangeReset(ICollection<Reset> reset)
+        public Task RemoveRangeReset(ICollection<Reset> reset)
         {
             _identity.Reset.RemoveRange(reset);
+            return Task.CompletedTask;
         }
 
         public async Task InsertLoginAsync(Guid? accountId, string email, bool successful, HttpContext http)

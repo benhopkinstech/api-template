@@ -34,7 +34,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             await identity.AmendPasswordAsync(account.Password, newPassword.Password);
-            identity.RemoveRangeReset(account.Reset);
+            await identity.RemoveRangeReset(account.Reset);
             await identity.SaveChangesAsync();
 
             return Results.Ok("Password reset");
