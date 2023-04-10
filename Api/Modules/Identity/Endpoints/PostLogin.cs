@@ -14,7 +14,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.Unauthorized();
             }
 
-            var account = await identity.GetLocalAccountAndPasswordByEmailAsync(credentials.Email);
+            var account = await identity.GetLocalAccountIncludePasswordByEmailAsync(credentials.Email);
             if (account == null || account.Password == null)
             {
                 await identity.InsertLoginAsync(null, credentials.Email, false, http);

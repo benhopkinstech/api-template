@@ -26,34 +26,34 @@ namespace Api.Modules.Identity.Repositories
                 .Include(x => x.Verification).Include(x => x.Reset).Include(x => x.Password).FirstOrDefaultAsync();
         }
 
-        public async Task<Account?> GetLocalAccountAndPasswordByEmailAsync(string email)
+        public async Task<Account?> GetLocalAccountIncludePasswordByEmailAsync(string email)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == email).Include(x => x.Password).FirstOrDefaultAsync();
         }
 
-        public async Task<Account?> GetLocalAccountAndPasswordByIdAsync(Guid id)
-        {
-            return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Id == id).Include(x => x.Password).FirstOrDefaultAsync();
-        }
-
-        public async Task<Account?> GetLocalAccountAndVerificationByIdAsync(Guid id)
+        public async Task<Account?> GetLocalAccountIncludeVerificationByIdAsync(Guid id)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Id == id).Include(x => x.Verification).FirstOrDefaultAsync();
         }
 
-        public async Task<Account?> GetLocalAccountAndResetByEmailAsync(string email)
+        public async Task<Account?> GetLocalAccountIncludeResetByEmailAsync(string email)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == email).Include(x => x.Reset).FirstOrDefaultAsync();
         }
 
-        public async Task<Account?> GetLocalAccountPasswordAndVerificationByIdAsync(Guid id)
+        public async Task<Account?> GetLocalAccountIncludePasswordVerificationByIdAsync(Guid id)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Id == id).Include(x => x.Password).Include(x => x.Verification).FirstOrDefaultAsync();
         }
 
-        public async Task<Account?> GetLocalAccountPasswordAndResetByIdAsync(Guid id)
+        public async Task<Account?> GetLocalAccountIncludePasswordResetByIdAsync(Guid id)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Id == id).Include(x => x.Password).Include(x => x.Reset).FirstOrDefaultAsync();
+        }
+
+        public async Task<Password?> GetPasswordByAccountIdAsync(Guid accountId)
+        {
+            return await _identity.Password.Where(x => x.AccountId == accountId).FirstOrDefaultAsync();
         }
 
         public async Task<Verification?> GetVerificationByIdAsync(Guid id)

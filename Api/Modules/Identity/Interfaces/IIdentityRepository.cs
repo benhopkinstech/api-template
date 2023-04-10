@@ -6,12 +6,12 @@ namespace Api.Modules.Identity.Interfaces
     {
         public Task<bool> AnyLocalAccountByEmailAsync(string email);
         public Task<Account?> GetAccountIncludeAllByIdAsync(Guid id);
-        public Task<Account?> GetLocalAccountAndPasswordByEmailAsync(string email);
-        public Task<Account?> GetLocalAccountAndPasswordByIdAsync(Guid id);
-        public Task<Account?> GetLocalAccountAndVerificationByIdAsync(Guid id);
-        public Task<Account?> GetLocalAccountAndResetByEmailAsync(string email);
-        public Task<Account?> GetLocalAccountPasswordAndVerificationByIdAsync(Guid id);
-        public Task<Account?> GetLocalAccountPasswordAndResetByIdAsync(Guid id);
+        public Task<Account?> GetLocalAccountIncludePasswordByEmailAsync(string email);
+        public Task<Account?> GetLocalAccountIncludeVerificationByIdAsync(Guid id);
+        public Task<Account?> GetLocalAccountIncludeResetByEmailAsync(string email);
+        public Task<Account?> GetLocalAccountIncludePasswordVerificationByIdAsync(Guid id);
+        public Task<Account?> GetLocalAccountIncludePasswordResetByIdAsync(Guid id);
+        public Task<Password?> GetPasswordByAccountIdAsync(Guid accountId);
         public Task<Verification?> GetVerificationByIdAsync(Guid id);
         public Task<Reset?> GetResetByIdAsync(Guid id);
         public Task<Account> AddLocalAccountAsync(string email);

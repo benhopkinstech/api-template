@@ -30,7 +30,7 @@ namespace Api.Modules.Identity.Endpoints
             if (accountVerification.Id != verificationId || accountVerification.AccountId != accountId || difference > TimeSpan.FromSeconds(3))
                 return Results.NotFound();
 
-            var account = await identity.GetLocalAccountAndVerificationByIdAsync(accountId);
+            var account = await identity.GetLocalAccountIncludeVerificationByIdAsync(accountId);
             if (account == null)
                 return Results.NotFound();
 

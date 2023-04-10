@@ -29,7 +29,7 @@ namespace Api.Modules.Identity.Endpoints
             if (accountReset.Id != resetId || accountReset.AccountId != accountId || difference > TimeSpan.FromSeconds(3))
                 return Results.NotFound();
 
-            var account = await identity.GetLocalAccountPasswordAndResetByIdAsync(accountId);
+            var account = await identity.GetLocalAccountIncludePasswordResetByIdAsync(accountId);
             if (account == null || account.Password == null)
                 return Results.NotFound();
 

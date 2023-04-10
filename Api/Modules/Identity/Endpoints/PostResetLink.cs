@@ -8,7 +8,7 @@ namespace Api.Modules.Identity.Endpoints
     {
         public static async Task<IResult> SendResetLinkAsync(EmailModel email, IIdentityRepository identity, IConfiguration config)
         {
-            var account = await identity.GetLocalAccountAndResetByEmailAsync(email.Email);
+            var account = await identity.GetLocalAccountIncludeResetByEmailAsync(email.Email);
             if (account == null || account.Reset == null)
                 return Results.NotFound();
 

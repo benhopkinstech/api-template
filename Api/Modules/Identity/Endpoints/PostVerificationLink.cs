@@ -14,7 +14,7 @@ namespace Api.Modules.Identity.Endpoints
             if (accountId == null)
                 return Results.NotFound();
 
-            var account = await identity.GetLocalAccountAndVerificationByIdAsync(accountId.Value);
+            var account = await identity.GetLocalAccountIncludeVerificationByIdAsync(accountId.Value);
             if (account == null || account.Verification == null)
                 return Results.NotFound();
 
