@@ -161,9 +161,8 @@ namespace Api.Tests.Identity
 
             var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            var account = await _identity.GetLocalAccountByEmailAsync(email);
-            Assert.NotNull(account);
-            account = await _identity.GetLocalAccountIncludeVerificationByIdAsync(account.Id);
+            Guid.TryParse(response.Headers.Location?.OriginalString, out Guid accountId);
+            var account = await _identity.GetLocalAccountIncludeVerificationByIdAsync(accountId);
             Assert.NotNull(account);
             var accountVerification = account.Verification;
             Assert.NotNull(accountVerification);
@@ -202,9 +201,8 @@ namespace Api.Tests.Identity
 
             var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            var account = await _identity.GetLocalAccountByEmailAsync(email);
-            Assert.NotNull(account);
-            account = await _identity.GetLocalAccountIncludePasswordResetByIdAsync(account.Id);
+            Guid.TryParse(response.Headers.Location?.OriginalString, out Guid accountId);
+            var account = await _identity.GetLocalAccountIncludePasswordResetByIdAsync(accountId);
             Assert.NotNull(account);
             var accountPassword = account.Password;
             Assert.NotNull(accountPassword);
@@ -249,7 +247,7 @@ namespace Api.Tests.Identity
         }
 
         [Fact]
-        public async Task Delete()
+        public async Task PutDelete()
         {
             await ResetDatabse();
             string email = "test@test.com";
@@ -258,11 +256,26 @@ namespace Api.Tests.Identity
             var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
+            var delete = new PasswordModel();
+            response = await _client.PutAsJsonAsync("identity/delete", delete);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            response = await _client.DeleteAsync("identity/delete");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            response = await _client.PutAsJsonAsync("identity/delete", delete);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            delete.Password = "somepassword";
+            response = await _client.PutAsJsonAsync("identity/delete", delete);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+            delete.Password = password;
+            response = await _client.PutAsJsonAsync("identity/delete", delete);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+            response = await _client.PutAsJsonAsync("identity/delete", delete);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);

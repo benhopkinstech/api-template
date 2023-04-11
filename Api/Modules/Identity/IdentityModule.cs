@@ -20,6 +20,8 @@ namespace Api.Modules.Identity
         {
             endpoints.MapPost($"{_module}/Register", PostRegister.RegisterAsync)
                 .AddEndpointFilter<CredentialsValidationFilter>()
+                .Produces(StatusCodes.Status201Created)
+                .Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status409Conflict)
                 .WithTags(_module).WithName(nameof(PostRegister.RegisterAsync)).WithOpenApi();
 
             endpoints.MapPost($"{_module}/Login", PostLogin.LoginAsync)
@@ -48,8 +50,11 @@ namespace Api.Modules.Identity
                 .AddEndpointFilter<PasswordValidationFilter>()
                 .WithTags(_module).WithName(nameof(PutReset.ResetAsync)).WithOpenApi();
 
-            endpoints.MapDelete($"{_module}/Delete", Delete.DeleteAsync)
-                .WithTags(_module).WithName(nameof(Delete.DeleteAsync)).WithOpenApi();
+            endpoints.MapPut($"{_module}/Delete", PutDelete.DeleteAsync)
+                .AddEndpointFilter<PasswordValidationFilter>()
+                .Produces(StatusCodes.Status204NoContent)
+                .Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound)
+                .WithTags(_module).WithName(nameof(PutDelete.DeleteAsync)).WithOpenApi();
 
             return endpoints;
         }

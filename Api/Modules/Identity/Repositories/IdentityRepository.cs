@@ -137,7 +137,7 @@ namespace Api.Modules.Identity.Repositories
         public async Task InsertLoginAsync(Guid? accountId, string email, bool successful, HttpContext http)
         {
             await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, Successful = successful, IpAddress = http.Connection.RemoteIpAddress });
-            await _identity.SaveChangesAsync();
+            await SaveChangesAsync();
         }
 
         public async Task DeleteAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification, ICollection<Reset> reset, Password password, Account account)
@@ -149,7 +149,7 @@ namespace Api.Modules.Identity.Repositories
             _identity.Reset.RemoveRange(reset);
             _identity.Password.Remove(password);
             _identity.Account.Remove(account);
-            await _identity.SaveChangesAsync();
+            await SaveChangesAsync();
         }
 
         public async Task SaveChangesAsync()

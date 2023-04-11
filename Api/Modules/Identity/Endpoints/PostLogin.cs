@@ -35,7 +35,7 @@ namespace Api.Modules.Identity.Endpoints
             }
 
             await identity.InsertLoginAsync(account.Id, account.Email, true, http);
-            return Results.Text(Authorization.GenerateToken(config, account.Id, account.Email));
+            return Results.Content(Authorization.GenerateToken(config, account.Id, account.Email));
         }
     }
 }
