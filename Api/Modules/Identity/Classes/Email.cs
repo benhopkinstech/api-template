@@ -9,6 +9,9 @@ namespace Api.Modules.Identity.Classes
     {
         public static async Task<bool> SendVerificationLinkAsync(IConfiguration config, HttpContext http, Verification verification, string recipient)
         {
+            if (ApiKeyUnpopulated(config))
+                return false;
+
             var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}/identity/verification?code=";
             var dynamicTemplateData = new
             {
@@ -20,6 +23,9 @@ namespace Api.Modules.Identity.Classes
 
         public static async Task<bool> SendEmailChangedAsync(IConfiguration config, string recipient, string newEmail)
         {
+            if (ApiKeyUnpopulated(config))
+                return false;
+
             var dynamicTemplateData = new
             {
                 newEmail,
@@ -30,6 +36,9 @@ namespace Api.Modules.Identity.Classes
 
         public static async Task<bool> SendResetLinkAsync(IConfiguration config, Reset reset, string recipient)
         {
+            if (ApiKeyUnpopulated(config))
+                return false;
+
             var resetUrl = config.GetValue<string>("Identity:ResetUrl");
             var dynamicTemplateData = new
             {
@@ -50,6 +59,16 @@ namespace Api.Modules.Identity.Classes
                 return false;
 
             return true;
+        }
+
+        private static bool ApiKeyUnpopulated(IConfiguration config)
+        {
+            string apiKey = config.GetValue<string>("SendGrid:ApiKey") ?? "";
+
+            if (String.IsNullOrWhiteSpace(apiKey) || apiKey.ToLower() == "disabled")
+                return true;
+
+            return false;
         }
     }
 }
