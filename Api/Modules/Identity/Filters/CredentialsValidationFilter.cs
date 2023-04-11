@@ -1,5 +1,6 @@
 ﻿using Api.Modules.Identity.Classes;
 using Api.Modules.Identity.Interfaces;
+using System.Text.Json;
 
 namespace Api.Modules.Identity.Filters
 {
@@ -8,14 +9,18 @@ namespace Api.Modules.Identity.Filters
         public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
         {
             var model = context.GetArgument<ICredentials>(0);
-            var errors = new List<string>();
+            var errors = new Dictionary<string, string[]>();
 
-            errors.AddRange(Validation.EmailCheck(model.Email));
+            var emailErrors = Validation.EmailCheck(model.Email);
+            if (emailErrors.Length > 0)
+                errors.Add(JsonNamingPolicy.CamelCase.ConvertName(nameof(model.Email)), emailErrors);
 
-            errors.AddRange(Validation.PasswordCheck(model.Password));
+            var passwordErrors = Validation.PasswordCheck(model.Password);
+            if (passwordErrors.Length > 0)
+                errors.Add(JsonNamingPolicy.CamelCase.ConvertName(nameof(model.Password)), passwordErrors);
 
             if (errors.Count > 0)
-                return Results.BadRequest(errors);
+                return Results.ValidationProblem(errors);
 
             return await next(context);
         }

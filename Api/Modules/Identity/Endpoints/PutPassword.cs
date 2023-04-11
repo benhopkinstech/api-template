@@ -8,7 +8,7 @@ namespace Api.Modules.Identity.Endpoints
     public static class PutPassword
     {
         [Authorize]
-        public static async Task<IResult> UpdatePasswordAsync(PasswordUpdateModel passwordUpdate, IIdentityRepository identity, HttpContext http)
+        public static async Task<IResult> UpdatePasswordAsync(PasswordUpdateModel update, IIdentityRepository identity, HttpContext http)
         {
             var accountId = Authorization.GetAccountId(http);
             if (accountId == null)
@@ -18,11 +18,11 @@ namespace Api.Modules.Identity.Endpoints
             if (passwordRecord == null)
                 return Results.NotFound();
 
-            var correctPassword = Encryption.VerifyHash(passwordUpdate.CurrentPassword, passwordRecord.Hash);
+            var correctPassword = Encryption.VerifyHash(update.CurrentPassword, passwordRecord.Hash);
             if (!correctPassword)
                 return Results.NotFound();
 
-            await identity.AmendPasswordAsync(passwordRecord, passwordUpdate.Password);
+            await identity.AmendPasswordAsync(passwordRecord, update.Password);
             await identity.SaveChangesAsync();
 
             return Results.Ok("Password updated");

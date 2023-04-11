@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PutReset
     {
-        public static async Task<IResult> ResetAsync(PasswordModel newPassword, string code, IIdentityRepository identity)
+        public static async Task<IResult> ResetAsync(PasswordModel reset, string code, IIdentityRepository identity)
         {
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.NotFound();
@@ -33,7 +33,7 @@ namespace Api.Modules.Identity.Endpoints
             if (account == null || account.Password == null || account.Reset == null)
                 return Results.NotFound();
 
-            await identity.AmendPasswordAsync(account.Password, newPassword.Password);
+            await identity.AmendPasswordAsync(account.Password, reset.Password);
             await identity.RemoveRangeResetAsync(account.Reset);
             await identity.SaveChangesAsync();
 

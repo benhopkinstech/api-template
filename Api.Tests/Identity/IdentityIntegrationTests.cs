@@ -126,29 +126,29 @@ namespace Api.Tests.Identity
             var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-            var passwordUpdate = new PasswordUpdateModel();
-            response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            var update = new PasswordUpdateModel();
+            response = await _client.PutAsJsonAsync("identity/password", update);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            response = await _client.PutAsJsonAsync("identity/password", update);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-            passwordUpdate.Password = password;
-            passwordUpdate.CurrentPassword = password;
-            response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            update.Password = password;
+            update.CurrentPassword = password;
+            response = await _client.PutAsJsonAsync("identity/password", update);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-            passwordUpdate.Password = "newepassword";
-            response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            update.Password = "newepassword";
+            response = await _client.PutAsJsonAsync("identity/password", update);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
-            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, passwordUpdate.Password);
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, update.Password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
@@ -212,13 +212,13 @@ namespace Api.Tests.Identity
             Assert.NotNull(accountReset);
             Assert.Equal(0, accountReset.Count);
 
-            var emailModel = new EmailModel();
-            response = await _client.PostAsJsonAsync("identity/resetlink", emailModel);
+            var resetLink = new EmailModel();
+            response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
             // Emailing not setup for test
-            emailModel.Email = email;
-            response = await _client.PostAsJsonAsync("identity/resetlink", emailModel);
+            resetLink.Email = email;
+            response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             account = await _identity.GetLocalAccountIncludePasswordResetByIdAsync(account.Id);
             Assert.NotNull(account);
@@ -230,12 +230,12 @@ namespace Api.Tests.Identity
 
             var resetList = accountReset.ToList();
             var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{resetList[0].Id}&{resetList[0].AccountId}&{resetList[0].CreatedOn}"));
-            var passwordModel = new PasswordModel();
-            response = await _client.PutAsJsonAsync($"identity/reset?code={code}", passwordModel);
+            var reset = new PasswordModel();
+            response = await _client.PutAsJsonAsync($"identity/reset?code={code}", reset);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-            passwordModel.Password = "new password";
-            response = await _client.PutAsJsonAsync($"identity/reset?code={code}", passwordModel);
+            reset.Password = "new password";
+            response = await _client.PutAsJsonAsync($"identity/reset?code={code}", reset);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             foreach (var entity in _dbContext.ChangeTracker.Entries().ToList())
                 entity.Reload();

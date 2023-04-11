@@ -1,5 +1,6 @@
 ﻿using Api.Modules.Identity.Classes;
 using Api.Modules.Identity.Models;
+using System.Text.Json;
 
 namespace Api.Modules.Identity.Filters
 {
@@ -8,17 +9,21 @@ namespace Api.Modules.Identity.Filters
         public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
         {
             var model = context.GetArgument<PasswordUpdateModel>(0);
-            var errors = new List<string>();
+            var errors = new Dictionary<string, string[]>();
 
-            errors.AddRange(Validation.PasswordCheck(model.Password));
+            var passwordErrors = Validation.PasswordCheck(model.Password);
+            if (passwordErrors.Length > 0)
+                errors.Add(JsonNamingPolicy.CamelCase.ConvertName(nameof(model.Password)), passwordErrors);
 
-            errors.AddRange(Validation.PasswordCheck(model.CurrentPassword));
+            var currentPasswordErrors = Validation.PasswordCheck(model.CurrentPassword);
+            if (currentPasswordErrors.Length > 0)
+                errors.Add(JsonNamingPolicy.CamelCase.ConvertName(nameof(model.CurrentPassword)), currentPasswordErrors);
 
-            if (errors.Count == 0 && model.Password == model.CurrentPassword)
-                errors.Add("Please ensure that the passwords provided are different");
+            if (model.Password == model.CurrentPassword)
+                errors.Add("passwords", new string[] { "Must not match" });
 
             if (errors.Count > 0)
-                return Results.BadRequest(errors);
+                return Results.ValidationProblem(errors);
 
             return await next(context);
         }
