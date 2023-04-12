@@ -17,7 +17,7 @@ namespace Api.Modules.Identity.Endpoints
             if (!Guid.TryParse(decodedItems[0], out var verificationId) || !Guid.TryParse(decodedItems[1], out var accountId) || !DateTime.TryParse(decodedItems[2], out var verificationCreated))
                 return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrlFail") ?? "");
 
-            if (DateTime.UtcNow > verificationCreated.AddDays(3))
+            if (DateTime.UtcNow > verificationCreated.AddHours(config.GetValue<int>("Identity:VerificationExpiryHours")))
                 return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrlFail") ?? "");
 
             var accountVerification = await identity.GetVerificationByIdAsync(verificationId);

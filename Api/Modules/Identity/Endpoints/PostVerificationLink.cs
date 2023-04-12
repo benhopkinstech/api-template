@@ -18,15 +18,15 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             if (account.Verified)
-                return Results.BadRequest("Account already verified");
+                return Results.Conflict();
 
             var verification = await identity.AddVerificationAsync(account.Id);
             await identity.SaveChangesAsync();
 
             if (!await Email.SendVerificationLinkAsync(config, http, verification, account.Email))
-                return Results.BadRequest("Failed to send verification link");
+                return Results.StatusCode(424);
 
-            return Results.Ok("Verification link sent");
+            return Results.Ok();
         }
     }
 }

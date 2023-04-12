@@ -9,7 +9,7 @@ namespace Api.Modules.Identity.Endpoints
         public static async Task<IResult> RegisterAsync(CredentialsModel credentials, IIdentityRepository identity, IConfiguration config, HttpContext http)
         {
             if (await identity.AnyLocalAccountByEmailAsync(credentials.Email))
-                return Results.Conflict("Email already in use");
+                return Results.Conflict();
 
             var account = await identity.AddLocalAccountAsync(credentials.Email);
             await identity.AddPasswordAsync(account.Id, credentials.Password);
@@ -18,7 +18,7 @@ namespace Api.Modules.Identity.Endpoints
 
             await Email.SendVerificationLinkAsync(config, http, verification, account.Email);
 
-            return Results.Created(account.Id.ToString(), "Account created");
+            return Results.Created(account.Id.ToString(), null);
         }
     }
 }

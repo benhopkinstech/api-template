@@ -16,9 +16,9 @@ namespace Api.Modules.Identity.Endpoints
             await identity.SaveChangesAsync();
 
             if (!await Email.SendResetLinkAsync(config, reset, account.Email))
-                return Results.BadRequest("Failed to send reset link");
+                return Results.StatusCode(424);
 
-            return Results.Ok("Reset link sent");
+            return Results.Ok();
         }
     }
 }

@@ -97,6 +97,11 @@ namespace Api.Modules.Identity.Repositories
             return reset;
         }
 
+        public async Task AddLoginAsync(Guid? accountId, string email, bool successful, HttpContext http)
+        {
+            await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, Successful = successful, IpAddress = http.Connection.RemoteIpAddress });
+        }
+
         public async Task<Account> AmendAccountEmailAsync(Account account, string email)
         {
             await _identity.AccountAudit.AddAsync(new AccountAudit { AccountId = account.Id, Email = account.Email });
@@ -134,13 +139,7 @@ namespace Api.Modules.Identity.Repositories
             return Task.CompletedTask;
         }
 
-        public async Task InsertLoginAsync(Guid? accountId, string email, bool successful, HttpContext http)
-        {
-            await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, Successful = successful, IpAddress = http.Connection.RemoteIpAddress });
-            await SaveChangesAsync();
-        }
-
-        public async Task DeleteAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification, ICollection<Reset> reset, Password password, Account account)
+        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification, ICollection<Reset> reset, Password password, Account account)
         {
             _identity.PasswordAudit.RemoveRange(passwordAudit);
             _identity.AccountAudit.RemoveRange(accountAudit);
@@ -149,7 +148,7 @@ namespace Api.Modules.Identity.Repositories
             _identity.Reset.RemoveRange(reset);
             _identity.Password.Remove(password);
             _identity.Account.Remove(account);
-            await SaveChangesAsync();
+            return Task.CompletedTask;
         }
 
         public async Task SaveChangesAsync()

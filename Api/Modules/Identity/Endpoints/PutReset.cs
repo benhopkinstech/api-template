@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PutReset
     {
-        public static async Task<IResult> ResetAsync(PasswordModel reset, string code, IIdentityRepository identity)
+        public static async Task<IResult> ResetAsync(PasswordModel reset, string code, IIdentityRepository identity, IConfiguration config)
         {
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.NotFound();
@@ -18,8 +18,8 @@ namespace Api.Modules.Identity.Endpoints
             if (!Guid.TryParse(decodedItems[0], out var resetId) || !Guid.TryParse(decodedItems[1], out var accountId) || !DateTime.TryParse(decodedItems[2], out var resetCreated))
                 return Results.NotFound();
 
-            if (DateTime.UtcNow > resetCreated.AddDays(1))
-                return Results.BadRequest("Reset link expired");
+            if (DateTime.UtcNow > resetCreated.AddHours(config.GetValue<int>("Identity:ResetExpiryHours")))
+                return Results.StatusCode(410);
 
             var accountReset = await identity.GetResetByIdAsync(resetId);
             if (accountReset == null)
@@ -37,7 +37,7 @@ namespace Api.Modules.Identity.Endpoints
             await identity.RemoveRangeResetAsync(account.Reset);
             await identity.SaveChangesAsync();
 
-            return Results.Ok("Password reset");
+            return Results.Ok();
         }
     }
 }

@@ -19,14 +19,14 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             if (credentials.Email == account.Email)
-                return Results.BadRequest();
+                return Results.Conflict();
 
             if (await identity.AnyLocalAccountByEmailAsync(credentials.Email))
-                return Results.Conflict("Email already in use");
+                return Results.Conflict();
 
             var correctPassword = Encryption.VerifyHash(credentials.Password, account.Password.Hash);
             if (!correctPassword)
-                return Results.NotFound();
+                return Results.Forbid();
 
             if (account.Verification.Count > 0)
                 await identity.RemoveRangeVerificationAsync(account.Verification);
@@ -39,7 +39,7 @@ namespace Api.Modules.Identity.Endpoints
             await Email.SendEmailChangedAsync(config, currentEmail, account.Email);
             await Email.SendVerificationLinkAsync(config, http, verification, account.Email);
 
-            return Results.Ok("Email updated");
+            return Results.Ok();
         }
     }
 }

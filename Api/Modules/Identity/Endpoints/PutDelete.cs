@@ -22,7 +22,8 @@ namespace Api.Modules.Identity.Endpoints
             if (!correctPassword)
                 return Results.Forbid();
 
-            await identity.DeleteAll(account.PasswordAudit, account.AccountAudit, account.Login, account.Verification, account.Reset, account.Password, account);
+            await identity.RemoveAll(account.PasswordAudit, account.AccountAudit, account.Login, account.Verification, account.Reset, account.Password, account);
+            await identity.SaveChangesAsync();
             return Results.NoContent();
         }
     }

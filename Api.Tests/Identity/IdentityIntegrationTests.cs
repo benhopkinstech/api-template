@@ -98,7 +98,7 @@ namespace Api.Tests.Identity
             emailUpdate.Email = email;
             emailUpdate.Password = password;
             response = await _client.PutAsJsonAsync("identity/email", emailUpdate);
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
 
             emailUpdate.Email = "newemail@test.com";
             response = await _client.PutAsJsonAsync("identity/email", emailUpdate);
@@ -110,7 +110,7 @@ namespace Api.Tests.Identity
             Assert.False(account.Verified);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, emailUpdate.Email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -136,12 +136,16 @@ namespace Api.Tests.Identity
             response = await _client.PutAsJsonAsync("identity/password", update);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-            update.Password = password;
-            update.CurrentPassword = password;
+            update.Password = "newpassword";
+            update.CurrentPassword = "newpassword";
             response = await _client.PutAsJsonAsync("identity/password", update);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-            update.Password = "newepassword";
+            update.CurrentPassword = "currentpassword";
+            response = await _client.PutAsJsonAsync("identity/password", update);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+            update.CurrentPassword = password;
             response = await _client.PutAsJsonAsync("identity/password", update);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -174,9 +178,8 @@ namespace Api.Tests.Identity
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            // Emailing not setup for test
             response = await _client.PostAsync("identity/verificationlink", null);
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.FailedDependency, response.StatusCode);
             account = await _identity.GetLocalAccountIncludeVerificationByIdAsync(account.Id);
             Assert.NotNull(account);
             accountVerification = account.Verification;
@@ -214,10 +217,9 @@ namespace Api.Tests.Identity
             response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-            // Emailing not setup for test
             resetLink.Email = email;
             response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.FailedDependency, response.StatusCode);
             account = await _identity.GetLocalAccountIncludePasswordResetByIdAsync(account.Id);
             Assert.NotNull(account);
             accountPassword = account.Password;
@@ -278,7 +280,7 @@ namespace Api.Tests.Identity
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }
 }
