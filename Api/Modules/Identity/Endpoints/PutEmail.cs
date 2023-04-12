@@ -8,7 +8,7 @@ namespace Api.Modules.Identity.Endpoints
     public static class PutEmail
     {
         [Authorize]
-        public static async Task<IResult> UpdateEmailAsync(CredentialsModel credentials, IIdentityService identity, IUserService user, IConfiguration config, HttpContext http)
+        public static async Task<IResult> UpdateEmailAsync(CredentialsModel credentials, IIdentityService identity, IUserService user, IEmailService email)
         {
             var accountId = user.GetAccountId();
             if (accountId == null)
@@ -36,8 +36,8 @@ namespace Api.Modules.Identity.Endpoints
             account = await identity.AmendAccountEmailAsync(account, credentials.Email);
             await identity.SaveChangesAsync();
 
-            await Email.SendEmailChangedAsync(config, currentEmail, account.Email);
-            await Email.SendVerificationLinkAsync(config, http, verification, account.Email);
+            await email.SendEmailChangedAsync(currentEmail, account.Email);
+            await email.SendVerificationLinkAsync(verification, account.Email);
 
             return Results.Ok();
         }

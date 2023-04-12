@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PostRegister
     {
-        public static async Task<IResult> RegisterAsync(CredentialsModel credentials, IIdentityService identity, IConfiguration config, HttpContext http)
+        public static async Task<IResult> RegisterAsync(CredentialsModel credentials, IIdentityService identity, IEmailService email)
         {
             if (await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return Results.Conflict();
@@ -16,7 +16,7 @@ namespace Api.Modules.Identity.Endpoints
             var verification = await identity.AddVerificationAsync(account.Id);
             await identity.SaveChangesAsync();
 
-            await Email.SendVerificationLinkAsync(config, http, verification, account.Email);
+            await email.SendVerificationLinkAsync(verification, account.Email);
 
             return Results.Created(account.Id.ToString(), null);
         }

@@ -13,6 +13,7 @@ namespace Api.Modules.Identity
         {
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddHttpContextAccessor();
 
             return services;

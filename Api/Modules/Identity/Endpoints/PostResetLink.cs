@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PostResetLink
     {
-        public static async Task<IResult> SendResetLinkAsync(EmailModel resetLink, IIdentityService identity, IConfiguration config)
+        public static async Task<IResult> SendResetLinkAsync(EmailModel resetLink, IIdentityService identity, IEmailService email)
         {
             var account = await identity.GetLocalAccountByEmailAsync(resetLink.Email);
             if (account == null)
@@ -15,7 +15,7 @@ namespace Api.Modules.Identity.Endpoints
             var reset = await identity.AddResetAsync(account.Id);
             await identity.SaveChangesAsync();
 
-            if (!await Email.SendResetLinkAsync(config, reset, account.Email))
+            if (!await email.SendResetLinkAsync(reset, account.Email))
                 return Results.StatusCode(424);
 
             return Results.Ok();

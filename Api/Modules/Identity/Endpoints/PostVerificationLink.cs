@@ -7,7 +7,7 @@ namespace Api.Modules.Identity.Endpoints
     public static class PostVerificationLink
     {
         [Authorize]
-        public static async Task<IResult> SendVerificationLinkAsync(IIdentityService identity, IUserService user, IConfiguration config, HttpContext http)
+        public static async Task<IResult> SendVerificationLinkAsync(IIdentityService identity, IUserService user, IEmailService email)
         {
             var accountId = user.GetAccountId();
             if (accountId == null)
@@ -23,7 +23,7 @@ namespace Api.Modules.Identity.Endpoints
             var verification = await identity.AddVerificationAsync(account.Id);
             await identity.SaveChangesAsync();
 
-            if (!await Email.SendVerificationLinkAsync(config, http, verification, account.Email))
+            if (!await email.SendVerificationLinkAsync(verification, account.Email))
                 return Results.StatusCode(424);
 
             return Results.Ok();
