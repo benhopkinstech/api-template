@@ -93,7 +93,7 @@ namespace Api.Tests.Identity
             Assert.NotNull(account);
             await _identity.AmendAccountVerifiedAsync(account);
             await _identity.SaveChangesAsync();
-            Assert.True(account.Verified);
+            Assert.True(account.IsVerified);
 
             emailUpdate.Email = email;
             emailUpdate.Password = password;
@@ -107,7 +107,7 @@ namespace Api.Tests.Identity
             foreach (var entity in _dbContext.ChangeTracker.Entries().ToList())
                 entity.Reload();
             Assert.Equal(account.Email, emailUpdate.Email);
-            Assert.False(account.Verified);
+            Assert.False(account.IsVerified);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -191,7 +191,7 @@ namespace Api.Tests.Identity
             await _client.GetAsync($"identity/verification?code={code}");
             foreach (var entity in _dbContext.ChangeTracker.Entries().ToList())
                 entity.Reload();
-            Assert.True(account.Verified);
+            Assert.True(account.IsVerified);
             Assert.Equal(0, accountVerification.Count);
         }
 

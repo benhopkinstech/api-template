@@ -32,7 +32,7 @@ namespace Api.Modules.Identity.Endpoints
             if (account == null || account.Verification == null)
                 return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrlFail") ?? "");
 
-            if (account.Verified)
+            if (account.IsVerified)
             {
                 await identity.RemoveRangeVerificationAsync(account.Verification);
                 await identity.SaveChangesAsync();

@@ -99,14 +99,14 @@ namespace Api.Modules.Identity.Repositories
 
         public async Task AddLoginAsync(Guid? accountId, string email, bool successful, HttpContext http)
         {
-            await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, Successful = successful, IpAddress = http.Connection.RemoteIpAddress });
+            await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, IsSuccessful = successful, IpAddress = http.Connection.RemoteIpAddress });
         }
 
         public async Task<Account> AmendAccountEmailAsync(Account account, string email)
         {
             await _identity.AccountAudit.AddAsync(new AccountAudit { AccountId = account.Id, Email = account.Email });
             account.Email = email;
-            account.Verified = false;
+            account.IsVerified = false;
             account.VerifiedOn = null;
             account.UpdatedOn = DateTime.UtcNow;
             return account;
@@ -114,7 +114,7 @@ namespace Api.Modules.Identity.Repositories
 
         public Task AmendAccountVerifiedAsync(Account account)
         {
-            account.Verified = true;
+            account.IsVerified = true;
             account.VerifiedOn = DateTime.UtcNow;
             account.UpdatedOn = DateTime.UtcNow;
             return Task.CompletedTask;

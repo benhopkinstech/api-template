@@ -12,7 +12,7 @@ public partial class Login
 
     public string Email { get; set; } = null!;
 
-    public bool Successful { get; set; }
+    public bool IsSuccessful { get; set; }
 
     public IPAddress? IpAddress { get; set; }
 

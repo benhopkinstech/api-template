@@ -47,9 +47,9 @@ public partial class IdentityContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
                 .HasColumnName("email");
+            entity.Property(e => e.IsVerified).HasColumnName("is_verified");
             entity.Property(e => e.ProviderId).HasColumnName("provider_id");
             entity.Property(e => e.UpdatedOn).HasColumnName("updated_on");
-            entity.Property(e => e.Verified).HasColumnName("verified");
             entity.Property(e => e.VerifiedOn).HasColumnName("verified_on");
 
             entity.HasOne(d => d.Provider).WithMany(p => p.Account)
@@ -94,7 +94,7 @@ public partial class IdentityContext : DbContext
                 .HasMaxLength(256)
                 .HasColumnName("email");
             entity.Property(e => e.IpAddress).HasColumnName("ip_address");
-            entity.Property(e => e.Successful).HasColumnName("successful");
+            entity.Property(e => e.IsSuccessful).HasColumnName("is_successful");
 
             entity.HasOne(d => d.Account).WithMany(p => p.Login)
                 .HasForeignKey(d => d.AccountId)

@@ -11,7 +11,7 @@ public partial class Account
 
     public string Email { get; set; } = null!;
 
-    public bool Verified { get; set; }
+    public bool IsVerified { get; set; }
 
     public DateTime? VerifiedOn { get; set; }
 

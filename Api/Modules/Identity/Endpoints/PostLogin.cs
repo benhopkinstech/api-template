@@ -19,7 +19,7 @@ namespace Api.Modules.Identity.Endpoints
             if (!correctPassword)
                 return await UnauthorizedAsync(identity, account.Id, account.Email, http);
 
-            if (config.GetValue<bool>("Identity:VerificationRequired") && account.Verified == false)
+            if (config.GetValue<bool>("Identity:VerificationRequired") && account.IsVerified == false)
             {
                 await InsertSuccessfulLoginAsync(identity, account.Id, account.Email, http);
                 return Results.Forbid();

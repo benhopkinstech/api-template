@@ -17,7 +17,7 @@ namespace Api.Modules.Identity.Endpoints
             if (account == null)
                 return Results.NotFound();
 
-            if (account.Verified)
+            if (account.IsVerified)
                 return Results.Conflict();
 
             var verification = await identity.AddVerificationAsync(account.Id);
