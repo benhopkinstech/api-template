@@ -9,10 +9,12 @@ namespace Api.Modules.Identity.Services
     public class IdentityService : IIdentityService
     {
         private readonly IdentityContext _identity;
+        private readonly IHttpContextAccessor _http;
 
-        public IdentityService(IdentityContext identity)
+        public IdentityService(IdentityContext identity, IHttpContextAccessor http)
         {
             _identity = identity;
+            _http = http;
         }
 
         public async Task<bool> AnyLocalAccountByEmailAsync(string email)
@@ -97,9 +99,9 @@ namespace Api.Modules.Identity.Services
             return reset;
         }
 
-        public async Task AddLoginAsync(Guid? accountId, string email, bool successful, HttpContext http)
+        public async Task AddLoginAsync(Guid? accountId, string email, bool successful)
         {
-            await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, IsSuccessful = successful, IpAddress = http.Connection.RemoteIpAddress });
+            await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, IsSuccessful = successful, IpAddress = _http.HttpContext?.Connection.RemoteIpAddress });
         }
 
         public async Task<Account> AmendAccountEmailAsync(Account account, string email)
