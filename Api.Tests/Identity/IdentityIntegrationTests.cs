@@ -1,7 +1,7 @@
 ﻿using Api.Modules.Identity.Data;
 using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
-using Api.Modules.Identity.Repositories;
+using Api.Modules.Identity.Services;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -11,13 +11,13 @@ namespace Api.Tests.Identity
 {
     public class IdentityIntegrationTests : IntegrationTest
     {
-        private IIdentityRepository _identity;
+        private IIdentityService _identity;
         private IdentityContext _dbContext;
 
         public IdentityIntegrationTests(ApiWebApplicationFactory fixture) : base(fixture)
         {
             _dbContext = CreateIdentityContext();
-            _identity = new IdentityRepository(_dbContext);
+            _identity = new IdentityService(_dbContext);
         }
 
         [Fact]

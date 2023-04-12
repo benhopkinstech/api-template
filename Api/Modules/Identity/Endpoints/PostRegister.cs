@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PostRegister
     {
-        public static async Task<IResult> RegisterAsync(CredentialsModel credentials, IIdentityRepository identity, IConfiguration config, HttpContext http)
+        public static async Task<IResult> RegisterAsync(CredentialsModel credentials, IIdentityService identity, IConfiguration config, HttpContext http)
         {
             if (await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return Results.Conflict();

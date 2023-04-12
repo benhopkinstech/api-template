@@ -4,13 +4,13 @@ using Api.Modules.Identity.Data.Tables;
 using Api.Modules.Identity.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Modules.Identity.Repositories
+namespace Api.Modules.Identity.Services
 {
-    public class IdentityRepository : IIdentityRepository
+    public class IdentityService : IIdentityService
     {
         private readonly IdentityContext _identity;
 
-        public IdentityRepository(IdentityContext identity)
+        public IdentityService(IdentityContext identity)
         {
             _identity = identity;
         }

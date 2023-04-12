@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PutReset
     {
-        public static async Task<IResult> ResetAsync(PasswordModel reset, string code, IIdentityRepository identity, IConfiguration config)
+        public static async Task<IResult> ResetAsync(PasswordModel reset, string code, IIdentityService identity, IConfiguration config)
         {
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.NotFound();

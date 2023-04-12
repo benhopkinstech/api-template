@@ -1,7 +1,7 @@
 ﻿using Api.Modules.Identity.Endpoints;
 using Api.Modules.Identity.Filters;
 using Api.Modules.Identity.Interfaces;
-using Api.Modules.Identity.Repositories;
+using Api.Modules.Identity.Services;
 
 namespace Api.Modules.Identity
 {
@@ -11,7 +11,9 @@ namespace Api.Modules.Identity
 
         public IServiceCollection RegisterModule(IServiceCollection services)
         {
-            services.AddScoped<IIdentityRepository, IdentityRepository>();
+            services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddHttpContextAccessor();
 
             return services;
         }

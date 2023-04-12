@@ -5,7 +5,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class GetVerification
     {
-        public static async Task<IResult> VerifyAsync(string code, IIdentityRepository identity, IConfiguration config)
+        public static async Task<IResult> VerifyAsync(string code, IIdentityService identity, IConfiguration config)
         {
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrlFail") ?? "");

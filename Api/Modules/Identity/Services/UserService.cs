@@ -1,24 +1,33 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Api.Modules.Identity.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mail;
 using System.Security.Claims;
 
-namespace Api.Modules.Identity.Classes
+namespace Api.Modules.Identity.Services
 {
-    public class Authorization
+    public class UserService : IUserService
     {
-        public static string GenerateToken(IConfiguration config, Guid? accountId, string email)
-        {
-            string? tokenSecret = config.GetValue<string>("Jwt:TokenSecret");
+        private readonly IHttpContextAccessor _http;
+        private readonly IConfiguration _config;
 
-            if (tokenSecret == null || accountId == null)
+        public UserService(IHttpContextAccessor http, IConfiguration config)
+        {
+            _http = http;
+            _config = config;
+        }
+
+        public string GenerateToken(Guid accountId, string email)
+        {
+            string? tokenSecret = _config.GetValue<string>("Jwt:TokenSecret");
+
+            if (tokenSecret == null)
             {
                 return "";
             }
 
             List<Claim> claims = new List<Claim>
             {
-                new Claim("sub", accountId.Value.ToString()),
+                new Claim("sub", accountId.ToString()),
                 new Claim("email", email)
             };
 
@@ -27,8 +36,8 @@ namespace Api.Modules.Identity.Classes
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: config.GetValue<string>("Jwt:Issuer"),
-                audience: config.GetValue<string>("Jwt:Audience"),
+                issuer: _config.GetValue<string>("Jwt:Issuer"),
+                audience: _config.GetValue<string>("Jwt:Audience"),
                 claims: claims,
                 notBefore: null,
                 expires: DateTime.Now.AddHours(1),
@@ -39,12 +48,12 @@ namespace Api.Modules.Identity.Classes
             return jwt;
         }
 
-        public static Guid? GetAccountId(HttpContext http)
+        public Guid? GetAccountId()
         {
-            if (http.User.Claims == null)
+            if (_http.HttpContext?.User.Claims == null)
                 return null;
 
-            var sub = http.User.Claims.FirstOrDefault(x => x.Type == "sub");
+            var sub = _http.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == "sub");
             if (sub == null)
                 return null;
 

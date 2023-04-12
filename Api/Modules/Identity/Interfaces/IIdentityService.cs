@@ -2,7 +2,7 @@
 
 namespace Api.Modules.Identity.Interfaces
 {
-    public interface IIdentityRepository
+    public interface IIdentityService
     {
         public Task<bool> AnyLocalAccountByEmailAsync(string email);
         public Task<Account?> GetAccountIncludeAllByIdAsync(Guid id);

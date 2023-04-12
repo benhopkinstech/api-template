@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PostLogin
     {
-        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityRepository identity, IConfiguration config, HttpContext http)
+        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityService identity, IUserService user, IConfiguration config, HttpContext http)
         {
             if (!await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return await NotFoundAsync(identity, credentials.Email, http);
@@ -26,24 +26,24 @@ namespace Api.Modules.Identity.Endpoints
             }
 
             await InsertSuccessfulLoginAsync(identity, account.Id, account.Email, http);
-            return Results.Content(Authorization.GenerateToken(config, account.Id, account.Email));
+            return Results.Content(user.GenerateToken(account.Id, account.Email));
         }
 
-        private async static Task<IResult> NotFoundAsync(IIdentityRepository identity, string email, HttpContext http)
+        private async static Task<IResult> NotFoundAsync(IIdentityService identity, string email, HttpContext http)
         {
             await identity.AddLoginAsync(null, email, false, http);
             await identity.SaveChangesAsync();
             return Results.NotFound();
         }
 
-        private async static Task<IResult> UnauthorizedAsync(IIdentityRepository identity, Guid accountId, string email, HttpContext http)
+        private async static Task<IResult> UnauthorizedAsync(IIdentityService identity, Guid accountId, string email, HttpContext http)
         {
             await identity.AddLoginAsync(accountId, email, false, http);
             await identity.SaveChangesAsync();
             return Results.Unauthorized();
         }
 
-        private async static Task InsertSuccessfulLoginAsync(IIdentityRepository identity, Guid accountId, string email, HttpContext http)
+        private async static Task InsertSuccessfulLoginAsync(IIdentityService identity, Guid accountId, string email, HttpContext http)
         {
             await identity.AddLoginAsync(accountId, email, true, http);
             await identity.SaveChangesAsync();
