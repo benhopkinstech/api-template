@@ -11,7 +11,7 @@ public partial class AccountAudit
 
     public string Email { get; set; } = null!;
 
-    public DateTime UpdatedOn { get; set; }
+    public DateTime CreatedOn { get; set; }
 
     public virtual Account Account { get; set; } = null!;
 }

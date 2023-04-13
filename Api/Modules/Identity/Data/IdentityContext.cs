@@ -42,7 +42,7 @@ public partial class IdentityContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.CreatedOn)
-                .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
+                .HasDefaultValueSql("now()")
                 .HasColumnName("created_on");
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
@@ -66,12 +66,12 @@ public partial class IdentityContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AccountId).HasColumnName("account_id");
+            entity.Property(e => e.CreatedOn)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_on");
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
                 .HasColumnName("email");
-            entity.Property(e => e.UpdatedOn)
-                .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
-                .HasColumnName("updated_on");
 
             entity.HasOne(d => d.Account).WithMany(p => p.AccountAudit)
                 .HasForeignKey(d => d.AccountId)
@@ -88,7 +88,7 @@ public partial class IdentityContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AccountId).HasColumnName("account_id");
             entity.Property(e => e.CreatedOn)
-                .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
+                .HasDefaultValueSql("now()")
                 .HasColumnName("created_on");
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
@@ -129,12 +129,12 @@ public partial class IdentityContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AccountId).HasColumnName("account_id");
+            entity.Property(e => e.CreatedOn)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_on");
             entity.Property(e => e.Hash)
                 .HasMaxLength(60)
                 .HasColumnName("hash");
-            entity.Property(e => e.UpdatedOn)
-                .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
-                .HasColumnName("updated_on");
 
             entity.HasOne(d => d.Account).WithMany(p => p.PasswordAudit)
                 .HasForeignKey(d => d.AccountId)

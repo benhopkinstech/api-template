@@ -20,7 +20,7 @@ CREATE TABLE identity.account
     email character varying(256) NOT NULL,
     is_verified boolean NOT NULL DEFAULT false,
     verified_on timestamp with time zone,
-    created_on timestamp with time zone NOT NULL DEFAULT (now() at time zone 'utc'),
+    created_on timestamp with time zone NOT NULL DEFAULT now(),
     updated_on timestamp with time zone,
     CONSTRAINT pk_account PRIMARY KEY (id),
     CONSTRAINT u_account UNIQUE (provider_id, email),
@@ -36,7 +36,7 @@ CREATE TABLE identity.account_audit
     id bigserial NOT NULL,
     account_id uuid NOT NULL,
     email character varying(256) NOT NULL,
-    updated_on timestamp with time zone NOT NULL DEFAULT (now() at time zone 'utc'),
+    created_on timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT pk_account_audit PRIMARY KEY (id),
     CONSTRAINT fk_account_audit_account FOREIGN KEY (account_id)
         REFERENCES identity.account (id)
@@ -63,7 +63,7 @@ CREATE TABLE identity.password_audit
     id bigserial NOT NULL,
     account_id uuid NOT NULL,
     hash character varying(60) NOT NULL,
-    updated_on timestamp with time zone NOT NULL DEFAULT (now() at time zone 'utc'),
+    created_on timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT pk_password_audit PRIMARY KEY (id),
     CONSTRAINT fk_password_audit_account FOREIGN KEY (account_id)
         REFERENCES identity.account (id)
@@ -105,7 +105,7 @@ CREATE TABLE identity.login
     email character varying(256) NOT NULL,
     is_successful boolean NOT NULL DEFAULT false,
     ip_address inet,
-    created_on timestamp with time zone NOT NULL DEFAULT (now() at time zone 'utc'),
+    created_on timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT pk_login PRIMARY KEY (id),
     CONSTRAINT fk_login_account FOREIGN KEY (account_id)
         REFERENCES identity.account (id)
