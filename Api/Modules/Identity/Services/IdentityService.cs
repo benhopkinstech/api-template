@@ -94,14 +94,14 @@ namespace Api.Modules.Identity.Services
 
         public async Task<Reset> AddResetAsync(Guid accountId)
         {
-            var reset = new Reset { Id = Guid.NewGuid(), AccountId = accountId, CreatedOn = DateTime.UtcNow };
+            var reset = new Reset { Id = Guid.NewGuid(), AccountId = accountId, CreatedBy = _http.HttpContext?.Connection.RemoteIpAddress, CreatedOn = DateTime.UtcNow };
             await _identity.Reset.AddAsync(reset);
             return reset;
         }
 
         public async Task AddLoginAsync(Guid? accountId, string email, bool successful)
         {
-            await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, IsSuccessful = successful, IpAddress = _http.HttpContext?.Connection.RemoteIpAddress });
+            await _identity.Login.AddAsync(new Login { AccountId = accountId, Email = email, IsSuccessful = successful, CreatedBy = _http.HttpContext?.Connection.RemoteIpAddress });
         }
 
         public async Task<Account> AmendAccountEmailAsync(Account account, string email)

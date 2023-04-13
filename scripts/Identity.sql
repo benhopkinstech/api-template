@@ -89,6 +89,7 @@ CREATE TABLE identity.reset
 (
     id uuid NOT NULL,
     account_id uuid NOT NULL,
+    created_by inet,
     created_on timestamp with time zone NOT NULL,
     CONSTRAINT pk_reset PRIMARY KEY (id),
     CONSTRAINT fk_reset_account FOREIGN KEY (account_id)
@@ -104,7 +105,7 @@ CREATE TABLE identity.login
     account_id uuid,
     email character varying(256) NOT NULL,
     is_successful boolean NOT NULL DEFAULT false,
-    ip_address inet,
+    created_by inet,
     created_on timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT pk_login PRIMARY KEY (id),
     CONSTRAINT fk_login_account FOREIGN KEY (account_id)

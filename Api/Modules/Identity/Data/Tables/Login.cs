@@ -14,7 +14,7 @@ public partial class Login
 
     public bool IsSuccessful { get; set; }
 
-    public IPAddress? IpAddress { get; set; }
+    public IPAddress? CreatedBy { get; set; }
 
     public DateTime CreatedOn { get; set; }
 

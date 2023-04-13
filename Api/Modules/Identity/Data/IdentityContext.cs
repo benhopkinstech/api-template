@@ -87,13 +87,13 @@ public partial class IdentityContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AccountId).HasColumnName("account_id");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.CreatedOn)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_on");
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
                 .HasColumnName("email");
-            entity.Property(e => e.IpAddress).HasColumnName("ip_address");
             entity.Property(e => e.IsSuccessful).HasColumnName("is_successful");
 
             entity.HasOne(d => d.Account).WithMany(p => p.Login)
@@ -166,6 +166,7 @@ public partial class IdentityContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.AccountId).HasColumnName("account_id");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.CreatedOn).HasColumnName("created_on");
 
             entity.HasOne(d => d.Account).WithMany(p => p.Reset)
