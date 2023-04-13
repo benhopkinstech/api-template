@@ -28,6 +28,7 @@ namespace Api.Modules.Identity.Services
             List<Claim> claims = new List<Claim>
             {
                 new Claim("sub", accountId.ToString()),
+                new Claim("jti", Guid.NewGuid().ToString()),
                 new Claim("email", email)
             };
 
@@ -40,7 +41,7 @@ namespace Api.Modules.Identity.Services
                 audience: _config.GetValue<string>("Jwt:Audience"),
                 claims: claims,
                 notBefore: null,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(_config.GetValue<int>("Jwt:TokenValidityMinutes")),
                 signingCredentials: creds);
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
