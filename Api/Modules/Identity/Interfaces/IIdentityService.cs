@@ -24,9 +24,9 @@ namespace Api.Modules.Identity.Interfaces
         public Task<Account> AmendAccountEmailAsync(Account account, string email);
         public Task AmendAccountVerifiedAsync(Account account);
         public Task AmendPasswordAsync(Password passwordRecord, string password);
-        public Task RemoveRangeVerificationAsync(ICollection<Verification> verification);
+        public Task RemoveVerificationAsync(Verification verification);
         public Task RemoveResetAsync(Reset reset);
-        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification,
+        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, Verification? verification,
             Reset? reset, Password password, Account account);
         public Task SaveChangesAsync();
     }

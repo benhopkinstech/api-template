@@ -1,5 +1,4 @@
-﻿using Api.Modules.Identity.Classes;
-using Api.Modules.Identity.Interfaces;
+﻿using Api.Modules.Identity.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Modules.Identity.Endpoints
@@ -7,18 +6,24 @@ namespace Api.Modules.Identity.Endpoints
     public static class PostVerificationLink
     {
         [Authorize]
-        public static async Task<IResult> SendVerificationLinkAsync(IIdentityService identity, IUserService user, IEmailService email)
+        public static async Task<IResult> SendVerificationLinkAsync(IIdentityService identity, IUserService user, IEmailService email, IConfiguration config)
         {
             var accountId = user.GetAccountId();
             if (accountId == null)
                 return Results.NotFound();
 
-            var account = await identity.GetLocalAccountByIdAsync(accountId.Value);
+            var account = await identity.GetLocalAccountIncludeVerificationByIdAsync(accountId.Value);
             if (account == null)
                 return Results.NotFound();
 
             if (account.IsVerified)
                 return Results.Conflict();
+
+            if (account.Verification != null && DateTime.UtcNow < account.Verification.CreatedOn.AddMinutes(config.GetValue<int>("Identity:VerificationResendMinutes")))
+                return Results.Conflict();
+
+            if (account.Verification != null)
+                await identity.RemoveVerificationAsync(account.Verification);
 
             var verification = await identity.AddVerificationAsync(account.Id);
             await identity.SaveChangesAsync();

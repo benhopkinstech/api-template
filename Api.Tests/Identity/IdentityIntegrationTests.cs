@@ -104,8 +104,7 @@ namespace Api.Tests.Identity
             response = await _client.PutAsJsonAsync("identity/email", emailUpdate);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            foreach (var entity in _dbContext.ChangeTracker.Entries().ToList())
-                entity.Reload();
+            await _dbContext.Entry(account).ReloadAsync();
             Assert.Equal(account.Email, emailUpdate.Email);
             Assert.False(account.IsVerified);
 
@@ -170,7 +169,6 @@ namespace Api.Tests.Identity
             Assert.NotNull(account);
             var accountVerification = account.Verification;
             Assert.NotNull(accountVerification);
-            Assert.Equal(1, accountVerification.Count);
 
             response = await _client.PostAsync("identity/verificationlink", null);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -179,20 +177,23 @@ namespace Api.Tests.Identity
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             response = await _client.PostAsync("identity/verificationlink", null);
-            Assert.Equal(HttpStatusCode.FailedDependency, response.StatusCode);
-            account = await _identity.GetLocalAccountIncludeVerificationByIdAsync(account.Id);
-            Assert.NotNull(account);
-            accountVerification = account.Verification;
-            Assert.NotNull(accountVerification);
-            Assert.Equal(2, accountVerification.Count);
+            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
 
-            var verificationList = accountVerification.ToList();
-            var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{verificationList[0].Id}&{verificationList[0].AccountId}&{verificationList[0].CreatedOn}"));
+            var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{accountVerification.Id}&{accountVerification.AccountId}&{accountVerification.CreatedOn}"));
             await _client.GetAsync($"identity/verification?code={code}");
-            foreach (var entity in _dbContext.ChangeTracker.Entries().ToList())
-                entity.Reload();
+            await _dbContext.Entry(account).ReloadAsync();
             Assert.True(account.IsVerified);
-            Assert.Equal(0, accountVerification.Count);
+            var oldVerification = await _identity.GetVerificationByIdAsync(accountVerification.Id);
+            Assert.Null(oldVerification);
+
+            response = await _client.PostAsync("identity/verificationlink", null);
+            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+            account.IsVerified = false;
+            await _identity.SaveChangesAsync();
+
+            response = await _client.PostAsync("identity/verificationlink", null);
+            Assert.Equal(HttpStatusCode.FailedDependency, response.StatusCode);
         }
 
         [Fact]

@@ -31,5 +31,5 @@ public partial class Account
 
     public virtual Reset? Reset { get; set; }
 
-    public virtual ICollection<Verification> Verification { get; } = new List<Verification>();
+    public virtual Verification? Verification { get; set; }
 }

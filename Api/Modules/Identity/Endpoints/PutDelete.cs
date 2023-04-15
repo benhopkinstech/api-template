@@ -15,7 +15,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             var account = await identity.GetAccountIncludeAllByIdAsync(accountId.Value);
-            if (account == null || account.PasswordAudit == null || account.AccountAudit == null || account.Login == null || account.Verification == null || account.Password == null)
+            if (account == null || account.PasswordAudit == null || account.AccountAudit == null || account.Login == null || account.Password == null)
                 return Results.NotFound();
 
             var correctPassword = Encryption.VerifyHash(delete.Password, account.Password.Hash);

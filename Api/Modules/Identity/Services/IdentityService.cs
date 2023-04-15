@@ -139,9 +139,9 @@ namespace Api.Modules.Identity.Services
             passwordRecord.UpdatedOn = DateTime.UtcNow;
         }
 
-        public Task RemoveRangeVerificationAsync(ICollection<Verification> verification)
+        public Task RemoveVerificationAsync(Verification verification)
         {
-            _identity.Verification.RemoveRange(verification);
+            _identity.Verification.Remove(verification);
             return Task.CompletedTask;
         }
 
@@ -151,12 +151,13 @@ namespace Api.Modules.Identity.Services
             return Task.CompletedTask;
         }
 
-        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification, Reset? reset, Password password, Account account)
+        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, Verification? verification, Reset? reset, Password password, Account account)
         {
             _identity.PasswordAudit.RemoveRange(passwordAudit);
             _identity.AccountAudit.RemoveRange(accountAudit);
             _identity.Login.RemoveRange(login);
-            _identity.Verification.RemoveRange(verification);
+            if (verification != null)
+                _identity.Verification.Remove(verification);
             if (reset != null)
                 _identity.Reset.Remove(reset);
             _identity.Password.Remove(password);

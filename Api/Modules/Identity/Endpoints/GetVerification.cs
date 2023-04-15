@@ -28,19 +28,19 @@ namespace Api.Modules.Identity.Endpoints
             if (accountVerification.Id != verificationId || accountVerification.AccountId != accountId || difference > TimeSpan.FromSeconds(3))
                 return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrlFail") ?? "");
 
-            var account = await identity.GetLocalAccountIncludeVerificationByIdAsync(accountId);
-            if (account == null || account.Verification == null)
+            var account = await identity.GetLocalAccountByIdAsync(accountId);
+            if (account == null)
                 return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrlFail") ?? "");
 
             if (account.IsVerified)
             {
-                await identity.RemoveRangeVerificationAsync(account.Verification);
+                await identity.RemoveVerificationAsync(accountVerification);
                 await identity.SaveChangesAsync();
                 return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrlSuccess") ?? "");
             }
 
             await identity.AmendAccountVerifiedAsync(account);
-            await identity.RemoveRangeVerificationAsync(account.Verification);
+            await identity.RemoveVerificationAsync(accountVerification);
             await identity.SaveChangesAsync();
             return Results.Redirect(config.GetValue<string>("Identity:VerificationRedirectUrlSuccess") ?? "");
         }

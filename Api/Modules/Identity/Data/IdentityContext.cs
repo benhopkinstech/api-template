@@ -182,14 +182,16 @@ public partial class IdentityContext : DbContext
 
             entity.ToTable("verification", "identity");
 
+            entity.HasIndex(e => e.AccountId, "u_verification").IsUnique();
+
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.AccountId).HasColumnName("account_id");
             entity.Property(e => e.CreatedOn).HasColumnName("created_on");
 
-            entity.HasOne(d => d.Account).WithMany(p => p.Verification)
-                .HasForeignKey(d => d.AccountId)
+            entity.HasOne(d => d.Account).WithOne(p => p.Verification)
+                .HasForeignKey<Verification>(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_verification_account");
         });

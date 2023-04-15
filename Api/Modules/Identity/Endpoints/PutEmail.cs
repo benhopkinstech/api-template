@@ -15,7 +15,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             var account = await identity.GetLocalAccountIncludePasswordVerificationByIdAsync(accountId.Value);
-            if (account == null || account.Password == null || account.Verification == null)
+            if (account == null || account.Password == null)
                 return Results.NotFound();
 
             if (credentials.Email == account.Email)
@@ -28,8 +28,8 @@ namespace Api.Modules.Identity.Endpoints
             if (!correctPassword)
                 return Results.Forbid();
 
-            if (account.Verification.Count > 0)
-                await identity.RemoveRangeVerificationAsync(account.Verification);
+            if (account.Verification != null)
+                await identity.RemoveVerificationAsync(account.Verification);
 
             var verification = await identity.AddVerificationAsync(account.Id);
             var currentEmail = account.Email;
