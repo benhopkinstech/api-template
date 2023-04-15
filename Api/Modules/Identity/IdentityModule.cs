@@ -62,8 +62,8 @@ namespace Api.Modules.Identity
 
             endpoints.MapPut($"{_module}/Reset", PutReset.ResetAsync)
                 .AddEndpointFilter<PasswordValidationFilter>()
-                .Produces(StatusCodes.Status200OK)
-                .Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound).Produces(StatusCodes.Status410Gone)
+                .Produces(StatusCodes.Status302Found)
+                .Produces(StatusCodes.Status400BadRequest)
                 .WithTags(_module).WithName(nameof(PutReset.ResetAsync)).WithOpenApi();
 
             endpoints.MapPut($"{_module}/Delete", PutDelete.DeleteAsync)

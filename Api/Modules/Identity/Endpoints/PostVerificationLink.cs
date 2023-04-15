@@ -19,7 +19,7 @@ namespace Api.Modules.Identity.Endpoints
             if (account.IsVerified)
                 return Results.Conflict();
 
-            if (account.Verification != null && DateTime.UtcNow < account.Verification.CreatedOn.AddMinutes(config.GetValue<int>("Identity:VerificationResendMinutes")))
+            if (account.Verification != null && DateTime.UtcNow < account.Verification.CreatedOn.AddMinutes(config.GetValue<int>("Identity:VerificationResendLimitMinutes")))
                 return Results.StatusCode(429);
 
             if (account.Verification != null)

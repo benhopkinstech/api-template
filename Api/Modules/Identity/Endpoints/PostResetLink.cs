@@ -11,7 +11,7 @@ namespace Api.Modules.Identity.Endpoints
             if (account == null)
                 return Results.NotFound();
 
-            if (account.Reset != null && DateTime.UtcNow < account.Reset.CreatedOn.AddMinutes(config.GetValue<int>("Identity:ResetResendMinutes")))
+            if (account.Reset != null && DateTime.UtcNow < account.Reset.CreatedOn.AddMinutes(config.GetValue<int>("Identity:ResetResendLimitMinutes")))
                 return Results.StatusCode(429);
 
             if (account.Reset != null)
