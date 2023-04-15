@@ -20,7 +20,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.Conflict();
 
             if (account.Verification != null && DateTime.UtcNow < account.Verification.CreatedOn.AddMinutes(config.GetValue<int>("Identity:VerificationResendMinutes")))
-                return Results.Conflict();
+                return Results.StatusCode(429);
 
             if (account.Verification != null)
                 await identity.RemoveVerificationAsync(account.Verification);

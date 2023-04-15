@@ -177,7 +177,7 @@ namespace Api.Tests.Identity
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             response = await _client.PostAsync("identity/verificationlink", null);
-            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
 
             var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{accountVerification.Id}&{accountVerification.AccountId}&{accountVerification.CreatedOn}"));
             await _client.GetAsync($"identity/verification?code={code}");
@@ -223,7 +223,7 @@ namespace Api.Tests.Identity
             Assert.NotNull(accountReset);
 
             response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
-            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
 
             var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{accountReset.Id}&{accountReset.AccountId}&{accountReset.CreatedOn}"));
             var reset = new PasswordModel();

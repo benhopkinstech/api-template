@@ -12,7 +12,7 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             if (account.Reset != null && DateTime.UtcNow < account.Reset.CreatedOn.AddMinutes(config.GetValue<int>("Identity:ResetResendMinutes")))
-                return Results.Conflict();
+                return Results.StatusCode(429);
 
             if (account.Reset != null)
                 await identity.RemoveResetAsync(account.Reset);
