@@ -162,15 +162,16 @@ public partial class IdentityContext : DbContext
 
             entity.ToTable("reset", "identity");
 
+            entity.HasIndex(e => e.AccountId, "u_reset").IsUnique();
+
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.AccountId).HasColumnName("account_id");
-            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.CreatedOn).HasColumnName("created_on");
 
-            entity.HasOne(d => d.Account).WithMany(p => p.Reset)
-                .HasForeignKey(d => d.AccountId)
+            entity.HasOne(d => d.Account).WithOne(p => p.Reset)
+                .HasForeignKey<Reset>(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_reset_account");
         });

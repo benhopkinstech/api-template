@@ -89,9 +89,9 @@ CREATE TABLE identity.reset
 (
     id uuid NOT NULL,
     account_id uuid NOT NULL,
-    created_by inet,
     created_on timestamp with time zone NOT NULL,
     CONSTRAINT pk_reset PRIMARY KEY (id),
+    CONSTRAINT u_reset UNIQUE (account_id),
     CONSTRAINT fk_reset_account FOREIGN KEY (account_id)
         REFERENCES identity.account (id)
 );

@@ -53,7 +53,7 @@ namespace Api.Modules.Identity
             endpoints.MapPost($"{_module}/ResetLink", PostResetLink.SendResetLinkAsync)
                 .AddEndpointFilter<EmailValidationFilter>()
                 .Produces(StatusCodes.Status200OK)
-                .Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound).Produces(StatusCodes.Status424FailedDependency)
+                .Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound).Produces(StatusCodes.Status409Conflict).Produces(StatusCodes.Status424FailedDependency)
                 .WithTags(_module).WithName(nameof(PostResetLink.SendResetLinkAsync)).WithOpenApi();
 
             endpoints.MapGet($"{_module}/Verification", GetVerification.VerifyAsync)

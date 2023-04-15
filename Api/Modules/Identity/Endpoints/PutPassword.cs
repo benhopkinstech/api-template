@@ -15,15 +15,15 @@ namespace Api.Modules.Identity.Endpoints
                 return Results.NotFound();
 
             var account = await identity.GetLocalAccountIncludePasswordResetByIdAsync(accountId.Value);
-            if (account == null || account.Password == null || account.Reset == null)
+            if (account == null || account.Password == null)
                 return Results.NotFound();
 
             var correctPassword = Encryption.VerifyHash(update.CurrentPassword, account.Password.Hash);
             if (!correctPassword)
                 return Results.Forbid();
 
-            if (account.Verification.Count > 0)
-                await identity.RemoveRangeResetAsync(account.Reset);
+            if (account.Reset != null)
+                await identity.RemoveResetAsync(account.Reset);
 
             await identity.AmendPasswordAsync(account.Password, update.Password);
             await identity.SaveChangesAsync();

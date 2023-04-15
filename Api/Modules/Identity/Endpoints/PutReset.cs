@@ -29,12 +29,12 @@ namespace Api.Modules.Identity.Endpoints
             if (accountReset.Id != resetId || accountReset.AccountId != accountId || difference > TimeSpan.FromSeconds(3))
                 return Results.NotFound();
 
-            var account = await identity.GetLocalAccountIncludePasswordResetByIdAsync(accountId);
-            if (account == null || account.Password == null || account.Reset == null)
+            var account = await identity.GetLocalAccountIncludePasswordByIdAsync(accountId);
+            if (account == null || account.Password == null)
                 return Results.NotFound();
 
             await identity.AmendPasswordAsync(account.Password, reset.Password);
-            await identity.RemoveRangeResetAsync(account.Reset);
+            await identity.RemoveResetAsync(accountReset);
             await identity.SaveChangesAsync();
 
             return Results.Ok();

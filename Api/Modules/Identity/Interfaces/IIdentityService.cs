@@ -8,8 +8,10 @@ namespace Api.Modules.Identity.Interfaces
         public Task<Account?> GetAccountIncludeAllByIdAsync(Guid id);
         public Task<Account?> GetLocalAccountByIdAsync(Guid id);
         public Task<Account?> GetLocalAccountByEmailAsync(string email);
+        public Task<Account?> GetLocalAccountIncludePasswordByIdAsync(Guid id);
         public Task<Account?> GetLocalAccountIncludePasswordByEmailAsync(string email);
         public Task<Account?> GetLocalAccountIncludeVerificationByIdAsync(Guid id);
+        public Task<Account?> GetLocalAccountIncludeResetByEmailAsync(string email);
         public Task<Account?> GetLocalAccountIncludePasswordVerificationByIdAsync(Guid id);
         public Task<Account?> GetLocalAccountIncludePasswordResetByIdAsync(Guid id);
         public Task<Verification?> GetVerificationByIdAsync(Guid id);
@@ -23,9 +25,9 @@ namespace Api.Modules.Identity.Interfaces
         public Task AmendAccountVerifiedAsync(Account account);
         public Task AmendPasswordAsync(Password passwordRecord, string password);
         public Task RemoveRangeVerificationAsync(ICollection<Verification> verification);
-        public Task RemoveRangeResetAsync(ICollection<Reset> reset);
+        public Task RemoveResetAsync(Reset reset);
         public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification,
-            ICollection<Reset> reset, Password password, Account account);
+            Reset? reset, Password password, Account account);
         public Task SaveChangesAsync();
     }
 }

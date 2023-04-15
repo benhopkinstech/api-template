@@ -38,6 +38,11 @@ namespace Api.Modules.Identity.Services
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == email).FirstOrDefaultAsync();
         }
 
+        public async Task<Account?> GetLocalAccountIncludePasswordByIdAsync(Guid id)
+        {
+            return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Id == id).Include(x => x.Password).FirstOrDefaultAsync();
+        }
+
         public async Task<Account?> GetLocalAccountIncludePasswordByEmailAsync(string email)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == email).Include(x => x.Password).FirstOrDefaultAsync();
@@ -46,6 +51,11 @@ namespace Api.Modules.Identity.Services
         public async Task<Account?> GetLocalAccountIncludeVerificationByIdAsync(Guid id)
         {
             return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Id == id).Include(x => x.Verification).FirstOrDefaultAsync();
+        }
+
+        public async Task<Account?> GetLocalAccountIncludeResetByEmailAsync(string email)
+        {
+            return await _identity.Account.Where(x => x.ProviderId == (short)Enums.Provider.Local && x.Email == email).Include(x => x.Reset).FirstOrDefaultAsync();
         }
 
         public async Task<Account?> GetLocalAccountIncludePasswordVerificationByIdAsync(Guid id)
@@ -94,7 +104,7 @@ namespace Api.Modules.Identity.Services
 
         public async Task<Reset> AddResetAsync(Guid accountId)
         {
-            var reset = new Reset { Id = Guid.NewGuid(), AccountId = accountId, CreatedBy = _http.HttpContext?.Connection.RemoteIpAddress, CreatedOn = DateTime.UtcNow };
+            var reset = new Reset { Id = Guid.NewGuid(), AccountId = accountId, CreatedOn = DateTime.UtcNow };
             await _identity.Reset.AddAsync(reset);
             return reset;
         }
@@ -135,19 +145,20 @@ namespace Api.Modules.Identity.Services
             return Task.CompletedTask;
         }
 
-        public Task RemoveRangeResetAsync(ICollection<Reset> reset)
+        public Task RemoveResetAsync(Reset reset)
         {
-            _identity.Reset.RemoveRange(reset);
+            _identity.Reset.Remove(reset);
             return Task.CompletedTask;
         }
 
-        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification, ICollection<Reset> reset, Password password, Account account)
+        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Verification> verification, Reset? reset, Password password, Account account)
         {
             _identity.PasswordAudit.RemoveRange(passwordAudit);
             _identity.AccountAudit.RemoveRange(accountAudit);
             _identity.Login.RemoveRange(login);
             _identity.Verification.RemoveRange(verification);
-            _identity.Reset.RemoveRange(reset);
+            if (reset != null)
+                _identity.Reset.Remove(reset);
             _identity.Password.Remove(password);
             _identity.Account.Remove(account);
             return Task.CompletedTask;

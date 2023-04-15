@@ -29,7 +29,7 @@ public partial class Account
 
     public virtual Provider Provider { get; set; } = null!;
 
-    public virtual ICollection<Reset> Reset { get; } = new List<Reset>();
+    public virtual Reset? Reset { get; set; }
 
     public virtual ICollection<Verification> Verification { get; } = new List<Verification>();
 }

@@ -204,14 +204,10 @@ namespace Api.Tests.Identity
 
             var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Guid.TryParse(response.Headers.Location?.OriginalString, out Guid accountId);
-            var account = await _identity.GetLocalAccountIncludePasswordResetByIdAsync(accountId);
+            var account = await _identity.GetLocalAccountIncludeResetByEmailAsync(email);
             Assert.NotNull(account);
-            var accountPassword = account.Password;
-            Assert.NotNull(accountPassword);
             var accountReset = account.Reset;
-            Assert.NotNull(accountReset);
-            Assert.Equal(0, accountReset.Count);
+            Assert.Null(accountReset);
 
             var resetLink = new EmailModel();
             response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
@@ -220,16 +216,15 @@ namespace Api.Tests.Identity
             resetLink.Email = email;
             response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
             Assert.Equal(HttpStatusCode.FailedDependency, response.StatusCode);
-            account = await _identity.GetLocalAccountIncludePasswordResetByIdAsync(account.Id);
+            account = await _identity.GetLocalAccountIncludeResetByEmailAsync(account.Email);
             Assert.NotNull(account);
-            accountPassword = account.Password;
-            Assert.NotNull(accountPassword);
             accountReset = account.Reset;
             Assert.NotNull(accountReset);
-            Assert.Equal(1, accountReset.Count);
 
-            var resetList = accountReset.ToList();
-            var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{resetList[0].Id}&{resetList[0].AccountId}&{resetList[0].CreatedOn}"));
+            response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
+            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+            var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{accountReset.Id}&{accountReset.AccountId}&{accountReset.CreatedOn}"));
             var reset = new PasswordModel();
             response = await _client.PutAsJsonAsync($"identity/reset?code={code}", reset);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -237,9 +232,11 @@ namespace Api.Tests.Identity
             reset.Password = "new password";
             response = await _client.PutAsJsonAsync($"identity/reset?code={code}", reset);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            foreach (var entity in _dbContext.ChangeTracker.Entries().ToList())
-                entity.Reload();
-            Assert.Equal(0, accountReset.Count);
+            var oldReset = await _identity.GetResetByIdAsync(accountReset.Id);
+            Assert.Null(oldReset);
+
+            response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
+            Assert.Equal(HttpStatusCode.FailedDependency, response.StatusCode);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
