@@ -26,7 +26,7 @@ namespace Api.Modules.Identity.Services
 
         public async Task<Account?> GetAccountIncludeAllByIdAsync(Guid id)
         {
-            return await _identity.Account.Where(x => x.Id == id).Include(x => x.PasswordAudit).Include(x => x.AccountAudit).Include(x => x.Login)
+            return await _identity.Account.Where(x => x.Id == id).Include(x => x.PasswordAudit).Include(x => x.AccountAudit).Include(x => x.Login).Include(x => x.Refresh)
                 .Include(x => x.Verification).Include(x => x.Reset).Include(x => x.Password).FirstOrDefaultAsync();
         }
 
@@ -176,11 +176,12 @@ namespace Api.Modules.Identity.Services
             return Task.CompletedTask;
         }
 
-        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, Verification? verification, Reset? reset, Password password, Account account)
+        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Refresh> refresh, Verification? verification, Reset? reset, Password password, Account account)
         {
             _identity.PasswordAudit.RemoveRange(passwordAudit);
             _identity.AccountAudit.RemoveRange(accountAudit);
             _identity.Login.RemoveRange(login);
+            _identity.Refresh.RemoveRange(refresh);
             if (verification != null)
                 _identity.Verification.Remove(verification);
             if (reset != null)

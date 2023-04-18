@@ -30,8 +30,8 @@ namespace Api.Modules.Identity.Interfaces
         public Task AmendRefreshUsedAsync(Refresh refresh);
         public Task RemoveVerificationAsync(Verification verification);
         public Task RemoveResetAsync(Reset reset);
-        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, Verification? verification,
-            Reset? reset, Password password, Account account);
+        public Task RemoveAll(ICollection<PasswordAudit> passwordAudit, ICollection<AccountAudit> accountAudit, ICollection<Login> login, ICollection<Refresh> refresh, 
+            Verification? verification, Reset? reset, Password password, Account account);
         public Task SaveChangesAsync();
     }
 }
