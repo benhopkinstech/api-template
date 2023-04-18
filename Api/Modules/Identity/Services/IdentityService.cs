@@ -4,6 +4,7 @@ using Api.Modules.Identity.Data.Tables;
 using Api.Modules.Identity.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.Security.Principal;
 
 namespace Api.Modules.Identity.Services
 {
@@ -84,6 +85,16 @@ namespace Api.Modules.Identity.Services
             return await _identity.Reset.Where(x => x.Id == id).FirstOrDefaultAsync();
         }
 
+        public async Task<Refresh?> GetRefreshIncludeAccountByIdAsync(Guid id)
+        {
+            return await _identity.Refresh.Where(x => x.Id == id).Include(x => x.Account).FirstOrDefaultAsync();
+        }
+
+        public async Task<ICollection<Refresh>> GetRefreshListNotUsedByAccountIdAsync(Guid accountId)
+        {
+            return await _identity.Refresh.Where(x => x.AccountId == accountId && !x.IsUsed).ToListAsync();
+        }
+
         public async Task<Account> AddLocalAccountAsync(string email)
         {
             var account = new Account { Id = Guid.NewGuid(), ProviderId = (short)Enums.Provider.Local, Email = email };
@@ -145,6 +156,12 @@ namespace Api.Modules.Identity.Services
             await _identity.PasswordAudit.AddAsync(new PasswordAudit { AccountId = passwordRecord.AccountId, Hash = passwordRecord.Hash });
             passwordRecord.Hash = Encryption.GenerateHash(password);
             passwordRecord.UpdatedOn = DateTime.UtcNow;
+        }
+
+        public Task AmendRefreshUsedAsync(Refresh refresh)
+        {
+            refresh.IsUsed = true;
+            return Task.CompletedTask;
         }
 
         public Task RemoveVerificationAsync(Verification verification)

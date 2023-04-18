@@ -33,6 +33,9 @@ namespace Api.Modules.Identity
                 .Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status401Unauthorized).Produces(StatusCodes.Status403Forbidden).Produces(StatusCodes.Status404NotFound)
                 .WithTags(_module).WithName(nameof(PostLogin.LoginAsync)).WithOpenApi();
 
+            endpoints.MapPost($"{_module}/Refresh", PostRefresh.RefreshAsync)
+                .WithTags(_module).WithName(nameof(PostRefresh.RefreshAsync)).WithOpenApi();
+
             endpoints.MapPut($"{_module}/Email", PutEmail.UpdateEmailAsync)
                 .AddEndpointFilter<CredentialsValidationFilter>()
                 .Produces(StatusCodes.Status200OK)

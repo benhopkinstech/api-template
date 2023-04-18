@@ -21,7 +21,7 @@ namespace Api.Modules.Identity.Services
         public string GenerateTokens(Guid accountId, string email, Refresh refresh)
         {
             var token = GenerateToken(accountId, email);
-            GenerateRefreshToken(refresh);
+            SetRefreshToken(refresh);
             return token;
         }
 
@@ -57,7 +57,7 @@ namespace Api.Modules.Identity.Services
             return jwt;
         }
 
-        private void GenerateRefreshToken(Refresh refresh)
+        private void SetRefreshToken(Refresh refresh)
         {
             var cookieOptions = new CookieOptions
             {
