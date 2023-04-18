@@ -6,9 +6,9 @@ namespace Api.Modules.Identity.Endpoints
     public static class PostVerificationLink
     {
         [Authorize]
-        public static async Task<IResult> SendVerificationLinkAsync(IIdentityService identity, IUserService user, IEmailService email, IConfiguration config)
+        public static async Task<IResult> SendVerificationLinkAsync(IIdentityService identity, IAuthService auth, IEmailService email, IConfiguration config)
         {
-            var accountId = user.GetAccountId();
+            var accountId = auth.GetAccountId();
             if (accountId == null)
                 return Results.NotFound();
 

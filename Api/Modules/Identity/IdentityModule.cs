@@ -12,7 +12,7 @@ namespace Api.Modules.Identity
         public IServiceCollection RegisterModule(IServiceCollection services)
         {
             services.AddScoped<IIdentityService, IdentityService>();
-            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddHttpContextAccessor();
 

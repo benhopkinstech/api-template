@@ -8,9 +8,9 @@ namespace Api.Modules.Identity.Endpoints
     public static class PutDelete
     {
         [Authorize]
-        public static async Task<IResult> DeleteAsync(PasswordModel delete, IIdentityService identity, IUserService user)
+        public static async Task<IResult> DeleteAsync(PasswordModel delete, IIdentityService identity, IAuthService auth)
         {
-            var accountId = user.GetAccountId();
+            var accountId = auth.GetAccountId();
             if (accountId == null)
                 return Results.NotFound();
 

@@ -8,9 +8,9 @@ namespace Api.Modules.Identity.Endpoints
     public static class PutPassword
     {
         [Authorize]
-        public static async Task<IResult> UpdatePasswordAsync(PasswordUpdateModel update, IIdentityService identity, IUserService user)
+        public static async Task<IResult> UpdatePasswordAsync(PasswordUpdateModel update, IIdentityService identity, IAuthService auth)
         {
-            var accountId = user.GetAccountId();
+            var accountId = auth.GetAccountId();
             if (accountId == null)
                 return Results.NotFound();
 

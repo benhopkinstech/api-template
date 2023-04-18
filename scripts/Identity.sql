@@ -100,6 +100,22 @@ CREATE TABLE identity.reset
 ALTER TABLE IF EXISTS identity.reset
     OWNER to postgres;
 --------------------------------------------------
+CREATE TABLE identity.refresh
+(
+    id uuid NOT NULL,
+    secret character varying(44) NOT NULL,
+    account_id uuid NOT NULL,
+    is_used boolean NOT NULL DEFAULT false,
+    created_on timestamp with time zone NOT NULL DEFAULT now(),
+    expires_on timestamp with time zone NOT NULL,
+    CONSTRAINT pk_refresh PRIMARY KEY (id),
+    CONSTRAINT fk_refresh_account FOREIGN KEY (account_id)
+        REFERENCES identity.account (id)
+);
+
+ALTER TABLE IF EXISTS identity.refresh
+    OWNER to postgres;
+--------------------------------------------------
 CREATE TABLE identity.login
 (
     id bigserial NOT NULL,

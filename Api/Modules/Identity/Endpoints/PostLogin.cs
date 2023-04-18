@@ -1,4 +1,5 @@
 ﻿using Api.Modules.Identity.Classes;
+using Api.Modules.Identity.Data.Tables;
 using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
 
@@ -6,7 +7,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PostLogin
     {
-        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityService identity, IUserService user, IConfiguration config)
+        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityService identity, IAuthService auth, IConfiguration config)
         {
             if (!await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return await NotFoundAsync(identity, credentials.Email);
@@ -21,12 +22,15 @@ namespace Api.Modules.Identity.Endpoints
 
             if (config.GetValue<bool>("Identity:VerificationRequired") && account.IsVerified == false)
             {
-                await InsertSuccessfulLoginAsync(identity, account.Id, account.Email);
+                await identity.AddLoginAsync(account.Id, account.Email, true);
+                await identity.SaveChangesAsync();
                 return Results.Forbid();
             }
 
-            await InsertSuccessfulLoginAsync(identity, account.Id, account.Email);
-            return Results.Content(user.GenerateToken(account.Id, account.Email));
+            await identity.AddLoginAsync(account.Id, account.Email, true);
+            var refresh = await identity.AddRefreshAsync(account.Id, DateTime.UtcNow.AddHours(config.GetValue<int>("Jwt:RefreshExpiryHours")));
+            await identity.SaveChangesAsync();
+            return Results.Content(auth.GenerateTokens(account.Id, account.Email, refresh));
         }
 
         private async static Task<IResult> NotFoundAsync(IIdentityService identity, string email)
@@ -41,12 +45,6 @@ namespace Api.Modules.Identity.Endpoints
             await identity.AddLoginAsync(accountId, email, false);
             await identity.SaveChangesAsync();
             return Results.Unauthorized();
-        }
-
-        private async static Task InsertSuccessfulLoginAsync(IIdentityService identity, Guid accountId, string email)
-        {
-            await identity.AddLoginAsync(accountId, email, true);
-            await identity.SaveChangesAsync();
         }
     }
 }

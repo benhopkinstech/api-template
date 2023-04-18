@@ -8,9 +8,9 @@ namespace Api.Modules.Identity.Endpoints
     public static class PutEmail
     {
         [Authorize]
-        public static async Task<IResult> UpdateEmailAsync(CredentialsModel credentials, IIdentityService identity, IUserService user, IEmailService email)
+        public static async Task<IResult> UpdateEmailAsync(CredentialsModel credentials, IIdentityService identity, IAuthService auth, IEmailService email)
         {
-            var accountId = user.GetAccountId();
+            var accountId = auth.GetAccountId();
             if (accountId == null)
                 return Results.NotFound();
 

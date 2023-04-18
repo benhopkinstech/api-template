@@ -20,6 +20,7 @@ namespace Api.Modules.Identity.Interfaces
         public Task AddPasswordAsync(Guid accountId, string password);
         public Task<Verification> AddVerificationAsync(Guid accountId);
         public Task<Reset> AddResetAsync(Guid accountId);
+        public Task<Refresh> AddRefreshAsync(Guid accountId, DateTime expiry);
         public Task AddLoginAsync(Guid? accountId, string email, bool successful);
         public Task<Account> AmendAccountEmailAsync(Account account, string email);
         public Task AmendAccountVerifiedAsync(Account account);

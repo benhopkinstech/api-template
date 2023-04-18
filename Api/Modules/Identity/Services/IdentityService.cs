@@ -3,6 +3,7 @@ using Api.Modules.Identity.Data;
 using Api.Modules.Identity.Data.Tables;
 using Api.Modules.Identity.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace Api.Modules.Identity.Services
 {
@@ -107,6 +108,13 @@ namespace Api.Modules.Identity.Services
             var reset = new Reset { Id = Guid.NewGuid(), AccountId = accountId, CreatedOn = DateTime.UtcNow };
             await _identity.Reset.AddAsync(reset);
             return reset;
+        }
+
+        public async Task<Refresh> AddRefreshAsync(Guid accountId, DateTime expiry)
+        {
+            var refresh = new Refresh { Id = Guid.NewGuid(), Secret = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)), AccountId = accountId, ExpiresOn = expiry };
+            await _identity.Refresh.AddAsync(refresh);
+            return refresh;
         }
 
         public async Task AddLoginAsync(Guid? accountId, string email, bool successful)

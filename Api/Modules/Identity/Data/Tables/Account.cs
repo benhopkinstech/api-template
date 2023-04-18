@@ -29,6 +29,8 @@ public partial class Account
 
     public virtual Provider Provider { get; set; } = null!;
 
+    public virtual ICollection<Refresh> Refresh { get; } = new List<Refresh>();
+
     public virtual Reset? Reset { get; set; }
 
     public virtual Verification? Verification { get; set; }

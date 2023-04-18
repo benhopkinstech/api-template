@@ -24,6 +24,8 @@ public partial class IdentityContext : DbContext
 
     public virtual DbSet<Provider> Provider { get; set; }
 
+    public virtual DbSet<Refresh> Refresh { get; set; }
+
     public virtual DbSet<Reset> Reset { get; set; }
 
     public virtual DbSet<Verification> Verification { get; set; }
@@ -154,6 +156,31 @@ public partial class IdentityContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(20)
                 .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<Refresh>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("pk_refresh");
+
+            entity.ToTable("refresh", "identity");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.AccountId).HasColumnName("account_id");
+            entity.Property(e => e.CreatedOn)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_on");
+            entity.Property(e => e.ExpiresOn).HasColumnName("expires_on");
+            entity.Property(e => e.IsUsed).HasColumnName("is_used");
+            entity.Property(e => e.Secret)
+                .HasMaxLength(44)
+                .HasColumnName("secret");
+
+            entity.HasOne(d => d.Account).WithMany(p => p.Refresh)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_refresh_account");
         });
 
         modelBuilder.Entity<Reset>(entity =>
