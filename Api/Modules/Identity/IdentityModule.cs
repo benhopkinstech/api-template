@@ -34,6 +34,8 @@ namespace Api.Modules.Identity
                 .WithTags(_module).WithName(nameof(PostLogin.LoginAsync)).WithOpenApi();
 
             endpoints.MapPost($"{_module}/Refresh", PostRefresh.RefreshAsync)
+                .Produces(StatusCodes.Status200OK)
+                .Produces(StatusCodes.Status404NotFound)
                 .WithTags(_module).WithName(nameof(PostRefresh.RefreshAsync)).WithOpenApi();
 
             endpoints.MapPut($"{_module}/Email", PutEmail.UpdateEmailAsync)

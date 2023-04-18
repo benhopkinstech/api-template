@@ -70,6 +70,23 @@ namespace Api.Tests.Identity
         }
 
         [Fact]
+        public async Task PostRefresh()
+        {
+            await ResetDatabse();
+            string email = "test@test.com";
+            string password = "password";
+
+            var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            response = await _client.PostAsync("identity/refresh", null);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task PutEmail()
         {
             await ResetDatabse();
