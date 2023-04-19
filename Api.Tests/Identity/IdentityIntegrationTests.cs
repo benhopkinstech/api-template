@@ -76,14 +76,46 @@ namespace Api.Tests.Identity
             string email = "test@test.com";
             string password = "password";
 
-            var response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
+            var response = await _client.PostAsync("identity/refresh", null);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            response = await IdentityExtensions.RegisterWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Guid.TryParse(response.Headers.Location?.OriginalString, out Guid accountId);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
+            _client.DefaultRequestHeaders.Add("x-refreshToken", "test");
+            response = await _client.PostAsync("identity/refresh", null);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+            var activeRefreshTokens = await _identity.GetRefreshListNotExpiredNotUsedByAccountIdAsync(accountId);
+            Assert.Single(activeRefreshTokens);
+            var refreshToken = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{activeRefreshTokens[0].Id}&{activeRefreshTokens[0].Secret}"));
+            _client.DefaultRequestHeaders.Remove("x-refreshToken");
+            _client.DefaultRequestHeaders.Add("x-refreshToken", refreshToken);
             response = await _client.PostAsync("identity/refresh", null);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            activeRefreshTokens = await _identity.GetRefreshListNotExpiredNotUsedByAccountIdAsync(accountId);
+            Assert.Single(activeRefreshTokens);
+            var newRefreshToken = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{activeRefreshTokens[0].Id}&{activeRefreshTokens[0].Secret}"));
+            Assert.NotEqual(refreshToken, newRefreshToken);
+            _client.DefaultRequestHeaders.Remove("x-refreshToken");
+            _client.DefaultRequestHeaders.Add("x-refreshToken", newRefreshToken);
+            response = await _client.PostAsync("identity/refresh", null);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            activeRefreshTokens = await _identity.GetRefreshListNotExpiredNotUsedByAccountIdAsync(accountId);
+            Assert.Single(activeRefreshTokens);
+
+            _client.DefaultRequestHeaders.Remove("x-refreshToken");
+            _client.DefaultRequestHeaders.Add("x-refreshToken", refreshToken);
+            response = await _client.PostAsync("identity/refresh", null);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+            activeRefreshTokens = await _identity.GetRefreshListNotExpiredNotUsedByAccountIdAsync(accountId);
+            Assert.Empty(activeRefreshTokens);
         }
 
         [Fact]
@@ -248,7 +280,11 @@ namespace Api.Tests.Identity
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
             reset.Password = "new password";
-            await _client.PutAsJsonAsync($"identity/reset?code={code}", reset);
+            response = await _client.PutAsJsonAsync($"identity/reset?code=test", reset);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+            response = await _client.PutAsJsonAsync($"identity/reset?code={code}", reset);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var oldReset = await _identity.GetResetByIdAsync(accountReset.Id);
             Assert.Null(oldReset);
 

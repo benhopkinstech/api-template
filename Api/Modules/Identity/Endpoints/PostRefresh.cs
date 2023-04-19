@@ -1,14 +1,13 @@
 ﻿using Api.Modules.Identity.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using System.Text;
 
 namespace Api.Modules.Identity.Endpoints
 {
     public static class PostRefresh
     {
-        public static async Task<IResult> RefreshAsync(IIdentityService identity, IAuthService auth, IConfiguration config, HttpContext http)
+        public static async Task<IResult> RefreshAsync([FromHeader(Name = "x-refreshToken")] string token, IIdentityService identity, IAuthService auth, IConfiguration config)
         {
-            var token = http.Request.Cookies["refreshToken"] ?? "";
-
             if (!Convert.TryFromBase64String(token, new byte[token.Length], out _))
                 return Results.NotFound();
 
@@ -29,8 +28,8 @@ namespace Api.Modules.Identity.Endpoints
 
             if (refresh.IsUsed)
             {
-                var notUsedRefreshRecords = await identity.GetRefreshListNotUsedByAccountIdAsync(refresh.AccountId);
-                foreach (var record in notUsedRefreshRecords)
+                var refreshRecords = await identity.GetRefreshListNotExpiredNotUsedByAccountIdAsync(refresh.AccountId);
+                foreach (var record in refreshRecords)
                     await identity.AmendRefreshUsedAsync(record);
                 await identity.SaveChangesAsync();
                 return Results.NotFound();

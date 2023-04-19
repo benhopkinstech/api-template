@@ -35,7 +35,7 @@ namespace Api.Modules.Identity
 
             endpoints.MapPost($"{_module}/Refresh", PostRefresh.RefreshAsync)
                 .Produces(StatusCodes.Status200OK)
-                .Produces(StatusCodes.Status404NotFound)
+                .Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound)
                 .WithTags(_module).WithName(nameof(PostRefresh.RefreshAsync)).WithOpenApi();
 
             endpoints.MapPut($"{_module}/Email", PutEmail.UpdateEmailAsync)
@@ -63,12 +63,13 @@ namespace Api.Modules.Identity
 
             endpoints.MapGet($"{_module}/Verification", GetVerification.VerifyAsync)
                 .Produces(StatusCodes.Status302Found)
+                .Produces(StatusCodes.Status400BadRequest)
                 .WithTags(_module).WithName(nameof(GetVerification.VerifyAsync)).WithOpenApi();
 
             endpoints.MapPut($"{_module}/Reset", PutReset.ResetAsync)
                 .AddEndpointFilter<PasswordValidationFilter>()
-                .Produces(StatusCodes.Status302Found)
-                .Produces(StatusCodes.Status400BadRequest)
+                .Produces(StatusCodes.Status200OK)
+                .Produces(StatusCodes.Status400BadRequest).Produces(StatusCodes.Status404NotFound).Produces(StatusCodes.Status410Gone)
                 .WithTags(_module).WithName(nameof(PutReset.ResetAsync)).WithOpenApi();
 
             endpoints.MapPut($"{_module}/Delete", PutDelete.DeleteAsync)

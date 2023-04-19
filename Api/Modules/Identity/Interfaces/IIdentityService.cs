@@ -17,7 +17,7 @@ namespace Api.Modules.Identity.Interfaces
         public Task<Verification?> GetVerificationByIdAsync(Guid id);
         public Task<Reset?> GetResetByIdAsync(Guid id);
         public Task<Refresh?> GetRefreshIncludeAccountByIdAsync(Guid id);
-        public Task<ICollection<Refresh>> GetRefreshListNotUsedByAccountIdAsync(Guid id);
+        public Task<List<Refresh>> GetRefreshListNotExpiredNotUsedByAccountIdAsync(Guid id);
         public Task<Account> AddLocalAccountAsync(string email);
         public Task AddPasswordAsync(Guid accountId, string password);
         public Task<Verification> AddVerificationAsync(Guid accountId);

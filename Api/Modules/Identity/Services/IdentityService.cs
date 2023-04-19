@@ -90,9 +90,9 @@ namespace Api.Modules.Identity.Services
             return await _identity.Refresh.Where(x => x.Id == id).Include(x => x.Account).FirstOrDefaultAsync();
         }
 
-        public async Task<ICollection<Refresh>> GetRefreshListNotUsedByAccountIdAsync(Guid accountId)
+        public async Task<List<Refresh>> GetRefreshListNotExpiredNotUsedByAccountIdAsync(Guid accountId)
         {
-            return await _identity.Refresh.Where(x => x.AccountId == accountId && !x.IsUsed).ToListAsync();
+            return await _identity.Refresh.Where(x => x.AccountId == accountId && x.ExpiresOn > DateTime.UtcNow && !x.IsUsed).ToListAsync();
         }
 
         public async Task<Account> AddLocalAccountAsync(string email)
