@@ -86,15 +86,15 @@ namespace Api.Tests.Identity
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            _client.DefaultRequestHeaders.Add("x-refreshToken", "test");
+            _client.DefaultRequestHeaders.Add("X-Refresh-Token", "test");
             response = await _client.PostAsync("identity/refresh", null);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
             var activeRefreshTokens = await _identity.GetRefreshListNotExpiredNotUsedByAccountIdAsync(accountId);
             Assert.Single(activeRefreshTokens);
             var refreshToken = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{activeRefreshTokens[0].Id}&{activeRefreshTokens[0].Secret}"));
-            _client.DefaultRequestHeaders.Remove("x-refreshToken");
-            _client.DefaultRequestHeaders.Add("x-refreshToken", refreshToken);
+            _client.DefaultRequestHeaders.Remove("X-Refresh-Token");
+            _client.DefaultRequestHeaders.Add("X-Refresh-Token", refreshToken);
             response = await _client.PostAsync("identity/refresh", null);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -102,15 +102,15 @@ namespace Api.Tests.Identity
             Assert.Single(activeRefreshTokens);
             var newRefreshToken = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{activeRefreshTokens[0].Id}&{activeRefreshTokens[0].Secret}"));
             Assert.NotEqual(refreshToken, newRefreshToken);
-            _client.DefaultRequestHeaders.Remove("x-refreshToken");
-            _client.DefaultRequestHeaders.Add("x-refreshToken", newRefreshToken);
+            _client.DefaultRequestHeaders.Remove("X-Refresh-Token");
+            _client.DefaultRequestHeaders.Add("X-Refresh-Token", newRefreshToken);
             response = await _client.PostAsync("identity/refresh", null);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             activeRefreshTokens = await _identity.GetRefreshListNotExpiredNotUsedByAccountIdAsync(accountId);
             Assert.Single(activeRefreshTokens);
 
-            _client.DefaultRequestHeaders.Remove("x-refreshToken");
-            _client.DefaultRequestHeaders.Add("x-refreshToken", refreshToken);
+            _client.DefaultRequestHeaders.Remove("X-Refresh-Token");
+            _client.DefaultRequestHeaders.Add("X-Refresh-Token", refreshToken);
             response = await _client.PostAsync("identity/refresh", null);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 

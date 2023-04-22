@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PostRefresh
     {
-        public static async Task<IResult> RefreshAsync([FromHeader(Name = "x-refreshToken")] string token, IIdentityService identity, IAuthService auth, IConfiguration config)
+        public static async Task<IResult> RefreshAsync([FromHeader(Name = "X-Refresh-Token")] string token, IIdentityService identity, IAuthService auth, IConfiguration config)
         {
             if (!Convert.TryFromBase64String(token, new byte[token.Length], out _))
                 return Results.NotFound();

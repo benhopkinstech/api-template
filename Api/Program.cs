@@ -48,6 +48,8 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<AuthorizeCheckOperationFilter>();
 });
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.RegisterModules();
 
 var app = builder.Build();
