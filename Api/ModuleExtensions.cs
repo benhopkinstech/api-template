@@ -20,6 +20,7 @@
         {
             foreach (var module in registeredModules)
                 module.MapEndpoints(app);
+
             return app;
         }
 
