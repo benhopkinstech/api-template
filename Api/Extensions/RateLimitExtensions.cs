@@ -1,6 +1,6 @@
 ﻿using System.Threading.RateLimiting;
 
-namespace Api
+namespace Api.Extensions
 {
     public static class RateLimitExtensions
     {

@@ -1,4 +1,4 @@
-﻿namespace Api
+﻿namespace Api.Interfaces
 {
     public interface IModule
     {

@@ -4,7 +4,6 @@ using Api.Modules.Identity.Data.Tables;
 using Api.Modules.Identity.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
-using System.Security.Principal;
 
 namespace Api.Modules.Identity.Services
 {

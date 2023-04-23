@@ -1,5 +1,7 @@
 ﻿using Api.Modules.Identity.Data.Tables;
 using Api.Modules.Identity.Interfaces;
+using Api.Settings;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -10,12 +12,14 @@ namespace Api.Modules.Identity.Services
     public class AuthService : IAuthService
     {
         private readonly IHttpContextAccessor _http;
-        private readonly IConfiguration _config;
+        private readonly JwtSettings _settings;
+        private readonly JwtSettings _settingsCurrent;
 
-        public AuthService(IHttpContextAccessor http, IConfiguration config)
+        public AuthService(IHttpContextAccessor http, IOptions<JwtSettings> settings, IOptionsMonitor<JwtSettings> settingsCurrent)
         {
             _http = http;
-            _config = config;
+            _settings = settings.Value;
+            _settingsCurrent = settingsCurrent.CurrentValue;
         }
 
         public string GenerateTokens(Guid accountId, string email, Refresh refresh)
@@ -27,29 +31,22 @@ namespace Api.Modules.Identity.Services
 
         private string GenerateToken(Guid accountId, string email)
         {
-            string? tokenSecret = _config.GetValue<string>("Jwt:TokenSecret");
-
-            if (tokenSecret == null)
-            {
-                return "";
-            }
-
             List<Claim> claims = new List<Claim>
             {
                 new Claim("sub", accountId.ToString()),
                 new Claim("email", email)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSecret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.TokenSecret));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _config.GetValue<string>("Jwt:Issuer"),
-                audience: _config.GetValue<string>("Jwt:Audience"),
+                issuer: _settings.Issuer,
+                audience: _settings.Audience,
                 claims: claims,
                 notBefore: null,
-                expires: DateTime.UtcNow.AddMinutes(_config.GetValue<int>("Jwt:TokenValidityMinutes")),
+                expires: DateTime.UtcNow.AddMinutes(_settingsCurrent.TokenExpiryMinutes),
                 signingCredentials: creds);
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);

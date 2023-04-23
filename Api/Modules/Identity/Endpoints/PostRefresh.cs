@@ -1,12 +1,14 @@
 ﻿using Api.Modules.Identity.Interfaces;
+using Api.Settings;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Text;
 
 namespace Api.Modules.Identity.Endpoints
 {
     public static class PostRefresh
     {
-        public static async Task<IResult> RefreshAsync([FromHeader(Name = "X-Refresh-Token")] string token, IIdentityService identity, IAuthService auth, IConfiguration config)
+        public static async Task<IResult> RefreshAsync([FromHeader(Name = "X-Refresh-Token")] string token, IIdentityService identity, IAuthService auth, IOptionsMonitor<JwtSettings> settings)
         {
             if (!Convert.TryFromBase64String(token, new byte[token.Length], out _))
                 return Results.NotFound();
@@ -36,7 +38,7 @@ namespace Api.Modules.Identity.Endpoints
             }
 
             await identity.AmendRefreshUsedAsync(refresh);
-            var newRefresh = await identity.AddRefreshAsync(refresh.AccountId, DateTime.UtcNow.AddHours(config.GetValue<int>("Jwt:RefreshExpiryHours")));
+            var newRefresh = await identity.AddRefreshAsync(refresh.AccountId, DateTime.UtcNow.AddHours(settings.CurrentValue.RefreshExpiryHours));
             await identity.SaveChangesAsync();
             
             return Results.Content(auth.GenerateTokens(refresh.AccountId, refresh.Account.Email, newRefresh));

@@ -1,12 +1,14 @@
 ﻿using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
+using Api.Settings;
+using Microsoft.Extensions.Options;
 using System.Text;
 
 namespace Api.Modules.Identity.Endpoints
 {
     public static class PutReset
     {
-        public static async Task<IResult> ResetAsync(PasswordModel reset, string code, IIdentityService identity, IConfiguration config)
+        public static async Task<IResult> ResetAsync(PasswordModel reset, string code, IIdentityService identity, IOptionsMonitor<IdentitySettings> settings)
         {
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.NotFound();
@@ -18,7 +20,7 @@ namespace Api.Modules.Identity.Endpoints
             if (!Guid.TryParse(decodedItems[0], out var resetId) || !Guid.TryParse(decodedItems[1], out var accountId) || !DateTime.TryParse(decodedItems[2], out var resetCreated))
                 return Results.NotFound();
 
-            if (DateTime.UtcNow > resetCreated.AddHours(config.GetValue<int>("Identity:ResetExpiryHours")))
+            if (DateTime.UtcNow > resetCreated.AddHours(settings.CurrentValue.ResetExpiryHours))
                 return Results.StatusCode(410);
 
             var accountReset = await identity.GetResetByIdAsync(resetId);

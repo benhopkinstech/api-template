@@ -1,6 +1,7 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Api.Filters;
+using Microsoft.OpenApi.Models;
 
-namespace Api
+namespace Api.Extensions
 {
     public static class SwaggerExtensions
     {

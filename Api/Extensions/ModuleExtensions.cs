@@ -1,4 +1,6 @@
-﻿namespace Api
+﻿using Api.Interfaces;
+
+namespace Api.Extensions
 {
     public static class ModuleExtensions
     {

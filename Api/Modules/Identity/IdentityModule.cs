@@ -1,4 +1,5 @@
-﻿using Api.Modules.Identity.Endpoints;
+﻿using Api.Interfaces;
+using Api.Modules.Identity.Endpoints;
 using Api.Modules.Identity.Filters;
 using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Services;

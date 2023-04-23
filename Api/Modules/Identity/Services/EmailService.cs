@@ -3,23 +3,25 @@ using SendGrid;
 using Api.Modules.Identity.Data.Tables;
 using System.Text;
 using Api.Modules.Identity.Interfaces;
+using Api.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Api.Modules.Identity.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration _config;
+        private readonly SendGridSettings _settings;
         private readonly IHttpContextAccessor _http;
 
-        public EmailService(IConfiguration config, IHttpContextAccessor http)
+        public EmailService(IOptionsMonitor<SendGridSettings> settings, IHttpContextAccessor http)
         {
-            _config = config;
+            _settings = settings.CurrentValue;
             _http = http;
         }
 
         public async Task<bool> SendVerificationLinkAsync(Verification verification, string recipient)
         {
-            if (ApiKeyUnpopulated())
+            if (ApiKeyDisabled())
                 return false;
 
             var baseUrl = $"{_http.HttpContext?.Request.Scheme}://{_http.HttpContext?.Request.Host}/identity/verification?code=";
@@ -28,12 +30,12 @@ namespace Api.Modules.Identity.Services
                 url = baseUrl + Convert.ToBase64String(Encoding.Unicode.GetBytes($"{verification.Id}&{verification.AccountId}&{verification.CreatedOn}")),
             };
 
-            return await SendViaSendGridAsync(recipient, _config.GetValue<string>("SendGrid:VerificationLinkTemplateId") ?? "", dynamicTemplateData);
+            return await SendViaSendGridAsync(recipient, _settings.VerificationLinkTemplateId, dynamicTemplateData);
         }
 
         public async Task<bool> SendEmailChangedAsync(string recipient, string newEmail)
         {
-            if (ApiKeyUnpopulated())
+            if (ApiKeyDisabled())
                 return false;
 
             var dynamicTemplateData = new
@@ -41,27 +43,27 @@ namespace Api.Modules.Identity.Services
                 newEmail,
             };
 
-            return await SendViaSendGridAsync(recipient, _config.GetValue<string>("SendGrid:EmailChangedTemplateId") ?? "", dynamicTemplateData);
+            return await SendViaSendGridAsync(recipient, _settings.EmailChangedTemplateId, dynamicTemplateData);
         }
 
         public async Task<bool> SendResetLinkAsync(Reset reset, string recipient)
         {
-            if (ApiKeyUnpopulated())
+            if (ApiKeyDisabled())
                 return false;
 
-            var resetUrl = _config.GetValue<string>("Identity:ResetUrl");
+            var resetUrl = _settings.ResetUrl;
             var dynamicTemplateData = new
             {
                 url = resetUrl + Convert.ToBase64String(Encoding.Unicode.GetBytes($"{reset.Id}&{reset.AccountId}&{reset.CreatedOn}")),
             };
 
-            return await SendViaSendGridAsync(recipient, _config.GetValue<string>("SendGrid:ResetLinkTemplateId") ?? "", dynamicTemplateData);
+            return await SendViaSendGridAsync(recipient, _settings.ResetLinkTemplateId, dynamicTemplateData);
         }
 
         private async Task<bool> SendViaSendGridAsync(string recipient, string templateId, object dynamicTemplateData)
         {
-            var client = new SendGridClient(_config.GetValue<string>("SendGrid:ApiKey"));
-            var from = new EmailAddress(_config.GetValue<string>("SendGrid:Email"), _config.GetValue<string>("SendGrid:Name"));
+            var client = new SendGridClient(_settings.ApiKey);
+            var from = new EmailAddress(_settings.Email, _settings.Name);
             var to = new EmailAddress(recipient);
             SendGridMessage message = MailHelper.CreateSingleTemplateEmail(from, to, templateId, dynamicTemplateData);
             var response = await client.SendEmailAsync(message);
@@ -71,11 +73,9 @@ namespace Api.Modules.Identity.Services
             return true;
         }
 
-        private bool ApiKeyUnpopulated()
+        private bool ApiKeyDisabled ()
         {
-            string apiKey = _config.GetValue<string>("SendGrid:ApiKey") ?? "";
-
-            if (String.IsNullOrWhiteSpace(apiKey) || apiKey.ToLower() == "disabled")
+            if (_settings.ApiKey.ToLower() == "disabled")
                 return true;
 
             return false;

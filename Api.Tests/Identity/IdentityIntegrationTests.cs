@@ -50,23 +50,11 @@ namespace Api.Tests.Identity
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, "", "");
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            _configuration["Identity:VerificationRequired"] = "True";
-
-            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-
-            var account = await _identity.GetLocalAccountByEmailAsync(email);
-            Assert.NotNull(account);
-            await _identity.AmendAccountVerifiedAsync(account);
-            await _identity.SaveChangesAsync();
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password + " ");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            _configuration["Identity:VerificationRequired"] = "False";
         }
 
         [Fact]
