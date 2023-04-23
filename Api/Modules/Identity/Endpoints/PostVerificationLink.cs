@@ -6,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
     public static class PostVerificationLink
     {
         [Authorize]
-        public static async Task<IResult> SendVerificationLinkAsync(IIdentityService identity, IAuthService auth, IEmailService email, IConfiguration config)
+        public static async Task<IResult> SendVerificationLinkAsync(IIdentityService identity, IAuthService auth, IEmailService email)
         {
             var accountId = auth.GetAccountId();
             if (accountId == null)
@@ -19,8 +19,11 @@ namespace Api.Modules.Identity.Endpoints
             if (account.IsVerified)
                 return Results.Conflict();
 
-            if (account.Verification != null && DateTime.UtcNow < account.Verification.CreatedOn.AddMinutes(config.GetValue<int>("Identity:VerificationResendLimitMinutes")))
-                return Results.StatusCode(429);
+            if (account.Verification != null && DateTime.UtcNow < account.Verification.CreatedOn.AddMinutes(10))
+                if (!await email.SendVerificationLinkAsync(account.Verification, account.Email))
+                    return Results.StatusCode(424);
+                else
+                    return Results.Ok();
 
             if (account.Verification != null)
                 await identity.RemoveVerificationAsync(account.Verification);

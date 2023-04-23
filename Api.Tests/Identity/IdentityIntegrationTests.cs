@@ -225,9 +225,6 @@ namespace Api.Tests.Identity
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            response = await _client.PostAsync("identity/verificationlink", null);
-            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
-
             var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{accountVerification.Id}&{accountVerification.AccountId}&{accountVerification.CreatedOn}"));
             await _client.GetAsync($"identity/verification?code={code}");
             await _dbContext.Entry(account).ReloadAsync();
@@ -270,9 +267,6 @@ namespace Api.Tests.Identity
             Assert.NotNull(account);
             accountReset = account.Reset;
             Assert.NotNull(accountReset);
-
-            response = await _client.PostAsJsonAsync("identity/resetlink", resetLink);
-            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
 
             var code = Convert.ToBase64String(Encoding.Unicode.GetBytes($"{accountReset.Id}&{accountReset.AccountId}&{accountReset.CreatedOn}"));
             var reset = new PasswordModel();
@@ -331,6 +325,199 @@ namespace Api.Tests.Identity
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task RateLimiting()
+        {
+            await ResetDatabse();
+            var credentials = new CredentialsModel();
+            var passwordUpdate = new PasswordUpdateModel();
+            var email = new EmailModel();
+            var password = new PasswordModel();
+            _client.DefaultRequestHeaders.Add("X-Forwarded-For", "1.2.3.4");
+
+            for (int req = 0; req < 10; req++)
+            {
+                if (req != 10)
+                {
+                    var response = await _client.PostAsJsonAsync("identity/register", credentials);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PostAsJsonAsync("identity/register", credentials);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            for (int req = 0; req < 10; req++)
+            {
+                if (req != 10)
+                {
+                    var response = await _client.PostAsJsonAsync("identity/login", credentials);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PostAsJsonAsync("identity/login", credentials);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            for (int req = 0; req <= 5; req++)
+            {
+                if (req != 5)
+                {
+                    var response = await _client.PostAsync("identity/refresh", null);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PostAsync("identity/refresh", null);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            for (int req = 0; req <= 2; req++)
+            {
+                if (req != 2)
+                {
+                    var response = await _client.PostAsJsonAsync("identity/resetlink", email);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PostAsJsonAsync("identity/resetlink", email);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            for (int req = 0; req <= 5; req++)
+            {
+                if (req != 5)
+                {
+                    var response = await _client.GetAsync("identity/verification");
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.GetAsync("identity/verification");
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            for (int req = 0; req <= 5; req++)
+            {
+                if (req != 5)
+                {
+                    var response = await _client.PutAsJsonAsync("identity/reset", password);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PutAsJsonAsync("identity/reset", password);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            _client.DefaultRequestHeaders.Remove("X-Forwarded-For");
+            _client.DefaultRequestHeaders.Add("X-Forwarded-For", "4.3.2.1");
+
+            var newIp = await _client.PostAsJsonAsync("identity/register", credentials);
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
+
+            newIp = await _client.PostAsJsonAsync("identity/login", credentials);
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
+
+            newIp = await _client.PostAsync("identity/refresh", null);
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
+
+            newIp = await _client.PostAsJsonAsync("identity/resetlink", email);
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
+
+            newIp = await _client.GetAsync("identity/verification");
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
+
+            newIp = await _client.PutAsJsonAsync("identity/reset", password);
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
+
+            newIp = await IdentityExtensions.RegisterWithCredentialsAsync(_client, "test@test.com", "password");
+            Assert.Equal(HttpStatusCode.Created, newIp.StatusCode);
+
+            newIp = await IdentityExtensions.LoginWithCredentialsAsync(_client, "test@test.com", "password");
+            Assert.Equal(HttpStatusCode.OK, newIp.StatusCode);
+
+            for (int req = 0; req <= 5; req++)
+            {
+                if (req != 5)
+                {
+                    var response = await _client.PutAsJsonAsync("identity/email", credentials);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PutAsJsonAsync("identity/email", credentials);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            for (int req = 0; req <= 5; req++)
+            {
+                if (req != 5)
+                {
+                    var response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            for (int req = 0; req <= 2; req++)
+            {
+                if (req != 2)
+                {
+                    var response = await _client.PostAsync("identity/verificationlink", null);
+                    Assert.Equal(HttpStatusCode.FailedDependency, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PostAsync("identity/verificationlink", null);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            for (int req = 0; req <= 5; req++)
+            {
+                if (req != 5)
+                {
+                    var response = await _client.PutAsJsonAsync("identity/delete", password);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                }
+                else
+                {
+                    var response = await _client.PutAsJsonAsync("identity/delete", password);
+                    Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+                }
+            }
+
+            _client.DefaultRequestHeaders.Remove("X-Forwarded-For");
+            _client.DefaultRequestHeaders.Add("X-Forwarded-For", "9.8.7.6");
+
+            newIp = await _client.PutAsJsonAsync("identity/email", credentials);
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
+
+            newIp = await _client.PutAsJsonAsync("identity/password", passwordUpdate);
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
+
+            newIp = await _client.PostAsync("identity/verificationlink", null);
+            Assert.Equal(HttpStatusCode.FailedDependency, newIp.StatusCode);
+
+            newIp = await _client.PutAsJsonAsync("identity/delete", password);
+            Assert.Equal(HttpStatusCode.BadRequest, newIp.StatusCode);
         }
     }
 }

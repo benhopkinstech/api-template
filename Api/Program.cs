@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.Add("X-Retry-After", retryAfter.ToString());
+        }
+
+        await context.HttpContext.Response.WriteAsync("", cancellationToken: token);
+    };
+    options.AddPolicy("fw2req5m", httpContext => RateLimitExtensions.GetFixedWindowLimiterByEndpointAndIp(httpContext, 2, TimeSpan.FromMinutes(5)));
+    options.AddPolicy("fw5req5m", httpContext => RateLimitExtensions.GetFixedWindowLimiterByEndpointAndIp(httpContext, 5, TimeSpan.FromMinutes(5)));
+    options.AddPolicy("fw10req5m", httpContext => RateLimitExtensions.GetFixedWindowLimiterByEndpointAndIp(httpContext, 10, TimeSpan.FromMinutes(5)));
+    options.AddPolicy("fw2req10m", httpContext => RateLimitExtensions.GetFixedWindowLimiterByEndpointAndIp(httpContext, 2, TimeSpan.FromMinutes(10)));
+    options.AddPolicy("fw5req10m", httpContext => RateLimitExtensions.GetFixedWindowLimiterByEndpointAndIp(httpContext, 5, TimeSpan.FromMinutes(10)));
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -58,6 +78,9 @@ JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseForwardedHeaders();
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {

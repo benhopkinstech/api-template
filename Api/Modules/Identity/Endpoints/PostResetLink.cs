@@ -5,14 +5,17 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PostResetLink
     {
-        public static async Task<IResult> SendResetLinkAsync(EmailModel resetLink, IIdentityService identity, IEmailService email, IConfiguration config)
+        public static async Task<IResult> SendResetLinkAsync(EmailModel resetLink, IIdentityService identity, IEmailService email)
         {
             var account = await identity.GetLocalAccountIncludeResetByEmailAsync(resetLink.Email);
             if (account == null)
                 return Results.NotFound();
 
-            if (account.Reset != null && DateTime.UtcNow < account.Reset.CreatedOn.AddMinutes(config.GetValue<int>("Identity:ResetResendLimitMinutes")))
-                return Results.StatusCode(429);
+            if (account.Reset != null && DateTime.UtcNow < account.Reset.CreatedOn.AddMinutes(30))
+                if (!await email.SendResetLinkAsync(account.Reset, account.Email))
+                    return Results.StatusCode(424);
+                else
+                    return Results.Ok();
 
             if (account.Reset != null)
                 await identity.RemoveResetAsync(account.Reset);
