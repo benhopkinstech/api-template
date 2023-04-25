@@ -1,5 +1,4 @@
 ﻿using Api.Modules.Identity.Data;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
@@ -14,14 +13,12 @@ namespace Api.Tests
         protected readonly ApiWebApplicationFactory _factory;
         protected readonly HttpClient _client;
         protected readonly IConfiguration _configuration;
-        protected readonly IHttpContextAccessor _http;
 
         public IntegrationTest(ApiWebApplicationFactory fixture)
         {
             _factory = fixture;
             _client = _factory.CreateClient();
             _configuration = _factory.Configuration;
-            _http = _factory.Http;
         }
 
         public async Task ResetDatabse()

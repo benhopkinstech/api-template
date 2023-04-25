@@ -1,16 +1,15 @@
 ﻿using Api.Modules.Identity.Interfaces;
-using Api.Settings;
-using Microsoft.Extensions.Options;
+using Api.Options;
 using System.Text;
 
 namespace Api.Modules.Identity.Endpoints
 {
     public static class GetVerification
     {
-        public static async Task<IResult> VerifyAsync(string code, IIdentityService identity, IOptionsMonitor<IdentitySettings> settings)
+        public static async Task<IResult> VerifyAsync(string code, IIdentityService identity, IdentityOptions options)
         {
-            string verificationRedirectUrlFail = settings.CurrentValue.VerificationRedirectUrlFail;
-            string verificationRedirectUrlSuccess = settings.CurrentValue.VerificationRedirectUrlSuccess;
+            string verificationRedirectUrlFail = options.VerificationRedirectUrlFail;
+            string verificationRedirectUrlSuccess = options.VerificationRedirectUrlSuccess;
 
             if (!Convert.TryFromBase64String(code, new byte[code.Length], out _))
                 return Results.Redirect(verificationRedirectUrlFail);
@@ -22,7 +21,7 @@ namespace Api.Modules.Identity.Endpoints
             if (!Guid.TryParse(decodedItems[0], out var verificationId) || !Guid.TryParse(decodedItems[1], out var accountId) || !DateTime.TryParse(decodedItems[2], out var verificationCreated))
                 return Results.Redirect(verificationRedirectUrlFail);
 
-            if (DateTime.UtcNow > verificationCreated.AddHours(settings.CurrentValue.VerificationExpiryHours))
+            if (DateTime.UtcNow > verificationCreated.AddHours(options.VerificationExpiryHours))
                 return Results.Redirect(verificationRedirectUrlFail);
 
             var accountVerification = await identity.GetVerificationByIdAsync(verificationId);

@@ -1,6 +1,6 @@
-﻿namespace Api.Settings
+﻿namespace Api.Options
 {
-    public class SendGridSettings
+    public class SendGridOptions
     {
         public string ApiKey { get; set; }
         public string Email { get; set; }
@@ -10,7 +10,7 @@
         public string ResetLinkTemplateId { get; set; }
         public string ResetUrl { get; set; }
 
-        public SendGridSettings()
+        public SendGridOptions()
         {
             ApiKey = string.Empty;
             Email = string.Empty;

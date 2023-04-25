@@ -1,4 +1,5 @@
-﻿using Api.Settings;
+﻿using Api.Options;
+using Microsoft.Extensions.Options;
 
 namespace Api.Extensions
 {
@@ -6,12 +7,12 @@ namespace Api.Extensions
     {
         public static IServiceCollection AddConfiguration(this IServiceCollection services, ConfigurationManager configuration)
         {
-            services.AddOptions<JwtSettings>().Bind(configuration.GetSection("Jwt"))
+            services.AddOptions<JwtOptions>().Bind(configuration.GetSection("Jwt"))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.TokenSecret))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.Issuer))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.Audience))
                 .ValidateOnStart();
-            services.AddOptions<SendGridSettings>().Bind(configuration.GetSection("SendGrid"))
+            services.AddOptions<SendGridOptions>().Bind(configuration.GetSection("SendGrid"))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.ApiKey))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.Email))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.VerificationLinkTemplateId))
@@ -19,10 +20,14 @@ namespace Api.Extensions
                 .Validate(o => !String.IsNullOrWhiteSpace(o.ResetLinkTemplateId))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.ResetUrl))
                 .ValidateOnStart();
-            services.AddOptions<IdentitySettings>().Bind(configuration.GetSection("Identity"))
+            services.AddOptions<IdentityOptions>().Bind(configuration.GetSection("Identity"))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.VerificationRedirectUrlSuccess))
                 .Validate(o => !String.IsNullOrWhiteSpace(o.VerificationRedirectUrlFail))
                 .ValidateOnStart();
+
+            services.AddScoped(s => s.GetRequiredService<IOptionsMonitor<JwtOptions>>().CurrentValue);
+            services.AddScoped(s => s.GetRequiredService<IOptionsMonitor<SendGridOptions>>().CurrentValue);
+            services.AddScoped(s => s.GetRequiredService<IOptionsMonitor<IdentityOptions>>().CurrentValue);
 
             return services;
         }

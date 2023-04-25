@@ -2,6 +2,10 @@
 using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
 using Api.Modules.Identity.Services;
+using Api.Options;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -17,7 +21,7 @@ namespace Api.Tests.Identity
         public IdentityIntegrationTests(ApiWebApplicationFactory fixture) : base(fixture)
         {
             _dbContext = CreateIdentityContext();
-            _identity = new IdentityService(_dbContext, _http);
+            _identity = new IdentityService(_dbContext, new HttpContextAccessor());
         }
 
         [Fact]
@@ -55,6 +59,23 @@ namespace Api.Tests.Identity
 
             response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var serviceProvider = _factory.Services;
+            var identityOptions = serviceProvider.GetRequiredService<IOptionsMonitor<IdentityOptions>>().CurrentValue;
+            identityOptions.VerificationRequired = true;
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+            var account = await _identity.GetLocalAccountByEmailAsync(email);
+            Assert.NotNull(account);
+            await _identity.AmendAccountVerifiedAsync(account);
+            await _identity.SaveChangesAsync();
+
+            response = await IdentityExtensions.LoginWithCredentialsAsync(_client, email, password);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            identityOptions.VerificationRequired = false;
         }
 
         [Fact]

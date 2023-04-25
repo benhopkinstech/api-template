@@ -1,6 +1,6 @@
-﻿namespace Api.Settings
+﻿namespace Api.Options
 {
-    public class IdentitySettings
+    public class IdentityOptions
     {
         public bool VerificationRequired { get; set; }
         public double VerificationExpiryHours { get; set; }
@@ -8,7 +8,7 @@
         public string VerificationRedirectUrlFail { get; set; }
         public double ResetExpiryHours { get; set; }
 
-        public IdentitySettings() 
+        public IdentityOptions() 
         {
             VerificationRequired = false;
             VerificationExpiryHours = 24;

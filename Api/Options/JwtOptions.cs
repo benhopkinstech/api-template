@@ -1,6 +1,6 @@
-﻿namespace Api.Settings
+﻿namespace Api.Options
 {
-    public class JwtSettings
+    public class JwtOptions
     {
         public string TokenSecret { get; set; }
         public string Issuer { get; set; }
@@ -8,7 +8,7 @@
         public double TokenExpiryMinutes { get; set; }
         public double RefreshExpiryHours { get; set; }
 
-        public JwtSettings()
+        public JwtOptions()
         {
             TokenSecret = string.Empty;
             Issuer = string.Empty;

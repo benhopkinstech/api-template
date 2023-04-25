@@ -1,14 +1,13 @@
 ﻿using Api.Modules.Identity.Classes;
 using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
-using Api.Settings;
-using Microsoft.Extensions.Options;
+using Api.Options;
 
 namespace Api.Modules.Identity.Endpoints
 {
     public static class PostLogin
     {
-        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityService identity, IAuthService auth, IOptionsMonitor<IdentitySettings> identitySettings, IOptionsMonitor<JwtSettings> jwtSettings)
+        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityService identity, IAuthService auth, IdentityOptions options, JwtOptions jwtOptions)
         {
             if (!await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return await NotFoundAsync(identity, credentials.Email);
@@ -21,7 +20,7 @@ namespace Api.Modules.Identity.Endpoints
             if (!correctPassword)
                 return await UnauthorizedAsync(identity, account.Id, account.Email);
 
-            if (identitySettings.CurrentValue.VerificationRequired && account.IsVerified == false)
+            if (options.VerificationRequired && account.IsVerified == false)
             {
                 await identity.AddLoginAsync(account.Id, account.Email, true);
                 await identity.SaveChangesAsync();
@@ -29,7 +28,7 @@ namespace Api.Modules.Identity.Endpoints
             }
 
             await identity.AddLoginAsync(account.Id, account.Email, true);
-            var refresh = await identity.AddRefreshAsync(account.Id, DateTime.UtcNow.AddHours(jwtSettings.CurrentValue.RefreshExpiryHours));
+            var refresh = await identity.AddRefreshAsync(account.Id, DateTime.UtcNow.AddHours(jwtOptions.RefreshExpiryHours));
             await identity.SaveChangesAsync();
             return Results.Content(auth.GenerateTokens(account.Id, account.Email, refresh));
         }

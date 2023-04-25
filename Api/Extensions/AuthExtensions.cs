@@ -1,4 +1,4 @@
-﻿using Api.Settings;
+﻿using Api.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,7 +10,7 @@ namespace Api.Extensions
     {
         public static IServiceCollection AddAuth(this IServiceCollection services, ConfigurationManager configuration)
         {
-            var jwt = new JwtSettings();
+            var jwt = new JwtOptions();
             configuration.GetSection("Jwt").Bind(jwt);
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
