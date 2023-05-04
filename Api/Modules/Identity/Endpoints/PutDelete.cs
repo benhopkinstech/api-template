@@ -1,5 +1,4 @@
-﻿using Api.Modules.Identity.Classes;
-using Api.Modules.Identity.Interfaces;
+﻿using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
 using Microsoft.AspNetCore.Authorization;
 
@@ -8,7 +7,7 @@ namespace Api.Modules.Identity.Endpoints
     public static class PutDelete
     {
         [Authorize]
-        public static async Task<IResult> DeleteAsync(PasswordModel delete, IIdentityService identity, IAuthService auth)
+        public static async Task<IResult> DeleteAsync(PasswordModel delete, IIdentityService identity, IAuthService auth, IEncryptionService encryption)
         {
             var accountId = auth.GetAccountId();
             if (accountId == null)
@@ -18,7 +17,7 @@ namespace Api.Modules.Identity.Endpoints
             if (account == null || account.PasswordAudit == null || account.AccountAudit == null || account.Login == null || account.Refresh == null || account.Password == null)
                 return Results.NotFound();
 
-            var correctPassword = Encryption.VerifyHash(delete.Password, account.Password.Hash);
+            var correctPassword = encryption.VerifyHash(delete.Password, account.Password.Hash);
             if (!correctPassword)
                 return Results.Forbid();
 

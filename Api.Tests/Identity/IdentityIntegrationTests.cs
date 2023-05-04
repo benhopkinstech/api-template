@@ -21,7 +21,7 @@ namespace Api.Tests.Identity
         public IdentityIntegrationTests(ApiWebApplicationFactory fixture) : base(fixture)
         {
             _dbContext = CreateIdentityContext();
-            _identity = new IdentityService(_dbContext, new HttpContextAccessor());
+            _identity = new IdentityService(_dbContext, new HttpContextAccessor(), new EncryptionService());
         }
 
         [Fact]

@@ -16,6 +16,7 @@ namespace Api.Modules.Identity
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IValidationService, ValidationService>();
+            services.AddScoped<IEncryptionService, EncryptionService>();
 
             return services;
         }

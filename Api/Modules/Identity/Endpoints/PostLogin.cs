@@ -1,5 +1,4 @@
-﻿using Api.Modules.Identity.Classes;
-using Api.Modules.Identity.Interfaces;
+﻿using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
 using Api.Options;
 
@@ -7,7 +6,7 @@ namespace Api.Modules.Identity.Endpoints
 {
     public static class PostLogin
     {
-        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityService identity, IAuthService auth, IdentityOptions options, JwtOptions jwtOptions)
+        public static async Task<IResult> LoginAsync(CredentialsModel credentials, IIdentityService identity, IAuthService auth, IEncryptionService encryption, IdentityOptions options, JwtOptions jwtOptions)
         {
             if (!await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return await NotFoundAsync(identity, credentials.Email);
@@ -16,7 +15,7 @@ namespace Api.Modules.Identity.Endpoints
             if (account == null || account.Password == null)
                 return await NotFoundAsync(identity, credentials.Email);
 
-            var correctPassword = Encryption.VerifyHash(credentials.Password, account.Password.Hash);
+            var correctPassword = encryption.VerifyHash(credentials.Password, account.Password.Hash);
             if (!correctPassword)
                 return await UnauthorizedAsync(identity, account.Id, account.Email);
 

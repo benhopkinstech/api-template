@@ -1,5 +1,4 @@
-﻿using Api.Modules.Identity.Classes;
-using Api.Modules.Identity.Interfaces;
+﻿using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
 
 namespace Api.Modules.Identity.Endpoints

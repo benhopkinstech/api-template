@@ -1,5 +1,4 @@
-﻿using Api.Modules.Identity.Classes;
-using Api.Modules.Identity.Interfaces;
+﻿using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
 using Microsoft.AspNetCore.Authorization;
 
@@ -8,7 +7,7 @@ namespace Api.Modules.Identity.Endpoints
     public static class PutEmail
     {
         [Authorize]
-        public static async Task<IResult> UpdateEmailAsync(CredentialsModel credentials, IIdentityService identity, IAuthService auth, IEmailService email)
+        public static async Task<IResult> UpdateEmailAsync(CredentialsModel credentials, IIdentityService identity, IAuthService auth, IEmailService email, IEncryptionService encryption)
         {
             var accountId = auth.GetAccountId();
             if (accountId == null)
@@ -24,7 +23,7 @@ namespace Api.Modules.Identity.Endpoints
             if (await identity.AnyLocalAccountByEmailAsync(credentials.Email))
                 return Results.Conflict();
 
-            var correctPassword = Encryption.VerifyHash(credentials.Password, account.Password.Hash);
+            var correctPassword = encryption.VerifyHash(credentials.Password, account.Password.Hash);
             if (!correctPassword)
                 return Results.Forbid();
 

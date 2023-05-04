@@ -1,5 +1,4 @@
-﻿using Api.Modules.Identity.Classes;
-using Api.Modules.Identity.Data;
+﻿using Api.Modules.Identity.Data;
 using Api.Modules.Identity.Data.Tables;
 using Api.Modules.Identity.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -11,11 +10,13 @@ namespace Api.Modules.Identity.Services
     {
         private readonly IdentityContext _identity;
         private readonly IHttpContextAccessor _http;
+        private readonly IEncryptionService _encryption;
 
-        public IdentityService(IdentityContext identity, IHttpContextAccessor http)
+        public IdentityService(IdentityContext identity, IHttpContextAccessor http, IEncryptionService encryption)
         {
             _identity = identity;
             _http = http;
+            _encryption = encryption;
         }
 
         public async Task<bool> AnyLocalAccountByEmailAsync(string email)
@@ -103,7 +104,7 @@ namespace Api.Modules.Identity.Services
 
         public async Task AddPasswordAsync(Guid accountId, string password)
         {
-            await _identity.Password.AddAsync(new Password { AccountId = accountId, Hash = Encryption.GenerateHash(password) });
+            await _identity.Password.AddAsync(new Password { AccountId = accountId, Hash = _encryption.GenerateHash(password) });
         }
 
         public async Task<Verification> AddVerificationAsync(Guid accountId)
@@ -153,7 +154,7 @@ namespace Api.Modules.Identity.Services
         public async Task AmendPasswordAsync(Password passwordRecord, string password)
         {
             await _identity.PasswordAudit.AddAsync(new PasswordAudit { AccountId = passwordRecord.AccountId, Hash = passwordRecord.Hash });
-            passwordRecord.Hash = Encryption.GenerateHash(password);
+            passwordRecord.Hash = _encryption.GenerateHash(password);
             passwordRecord.UpdatedOn = DateTime.UtcNow;
         }
 
