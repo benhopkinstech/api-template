@@ -1,4 +1,4 @@
-﻿using Api.Modules.Identity.Classes;
+﻿using Api.Modules.Identity.Interfaces;
 using Api.Modules.Identity.Models;
 using System.Text.Json;
 
@@ -6,16 +6,23 @@ namespace Api.Modules.Identity.Filters
 {
     public class PasswordUpdateValidationFilter : IEndpointFilter
     {
+        private readonly IValidationService _validation;
+
+        public PasswordUpdateValidationFilter(IValidationService validation)
+        {
+            _validation = validation;
+        }
+
         public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
         {
             var model = context.GetArgument<PasswordUpdateModel>(0);
             var errors = new Dictionary<string, string[]>();
 
-            var passwordErrors = Validation.PasswordCheck(model.Password);
+            var passwordErrors = _validation.PasswordCheck(model.Password);
             if (passwordErrors.Length > 0)
                 errors.Add(JsonNamingPolicy.CamelCase.ConvertName(nameof(model.Password)), passwordErrors);
 
-            var currentPasswordErrors = Validation.PasswordCheck(model.CurrentPassword);
+            var currentPasswordErrors = _validation.PasswordCheck(model.CurrentPassword);
             if (currentPasswordErrors.Length > 0)
                 errors.Add(JsonNamingPolicy.CamelCase.ConvertName(nameof(model.CurrentPassword)), currentPasswordErrors);
 

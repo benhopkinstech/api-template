@@ -1,10 +1,11 @@
-﻿using System.Net.Mail;
+﻿using Api.Modules.Identity.Interfaces;
+using System.Net.Mail;
 
-namespace Api.Modules.Identity.Classes
+namespace Api.Modules.Identity.Services
 {
-    public class Validation
+    public class ValidationService : IValidationService
     {
-        public static string[] EmailCheck(string email)
+        public string[] EmailCheck(string email)
         {
             var errors = new List<string>();
 
@@ -20,7 +21,7 @@ namespace Api.Modules.Identity.Classes
             return errors.ToArray();
         }
 
-        public static string[] PasswordCheck(string password)
+        public string[] PasswordCheck(string password)
         {
             var errors = new List<string>();
 
