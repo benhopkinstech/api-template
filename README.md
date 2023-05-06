@@ -5,7 +5,7 @@ This project is a great basis for starting your own project that requires an API
 - C# Minimal API
 - Postgres Database
 - Entity Framework
-- JWT Tokens
+- JWT
 - Integration Tests
 - Unit Tests
 
