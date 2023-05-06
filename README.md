@@ -1,19 +1,20 @@
 # api-template
 
-This project is a great basis for starting your own project that requires an API with user accounts using the following
+This is a great basis for starting your own project that requires an API with user accounts, making use of the following
 
 - C# Minimal API
 - Postgres Database
 - Entity Framework
 - JWT
+- SendGrid
 - Integration Tests
 - Unit Tests
 
 Microservices are unnecessary for a lot of projects so this takes a monolithic approach with the flexibility to be able to split things out in the future 
 
-Each schema should be split into it's own `Module` and `DbContext` keeping things seperate whilst still being in the same project
+Each schema has it's own module and DbContext keeping things seperate whilst still being in the same project
 
-The `Identity` module that comes with this can be altered to as you see fit for your application
+The `Identity` module that comes with this can be changed as you see fit for your application
 
 ## Installation
 
